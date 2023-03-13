@@ -5,7 +5,6 @@ import { execSync } from 'child_process'
 import { ChatGPTAPI } from 'chatgpt'
 import inquirer from 'inquirer'
 import { getArgs, checkGitRepository } from './helpers.js'
-import { addGitmojiToCommitMessage } from './gitmoji.js'
 import { filterApi } from './filterApi.js'
 
 import * as dotenv from 'dotenv'
@@ -35,14 +34,19 @@ const generateSingleCommit = async (diff) => {
   const prompt =
     'I want you to act as the author of a commit message in git.' +
     "I'll enter a git diff, and your job is to convert it into a useful commit message." +
-    'Do not preface the commit with anything, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>) adding in subject the propers gitmoji icons:' +
+    'Do not preface the commit message with anything, use the present tense, return the full sentence.' +
+    'Use the conventional commits specification (<type>(<scope>): <gitmoji><subject>).' +
+    'type section must be lowercase.' +
+    'scope section is optional.' +
+    'gitmoji section collect one or more gitmoji you select analysing subject section.' +
+    'subject section first line must be at maximun 50 chars long:' +
     diff
 
   if (!await filterApi({ prompt, filterFee: args['filter-fee'] })) process.exit(1)
 
   const { text } = await api.sendMessage(prompt)
 
-  const gitmojiCommit = addGitmojiToCommitMessage(text)
+  const gitmojiCommit = text
 
   console.log(
     `Proposed Commit:\n------------------------------\n${gitmojiCommit}\n------------------------------`
@@ -73,15 +77,21 @@ const generateSingleCommit = async (diff) => {
 const generateListCommits = async (diff, numOptions = 5) => {
   const prompt =
     'I want you to act as the author of a commit message in git.' +
-    `I'll enter a git diff, and your job is to convert it into a useful commit message and make ${numOptions} options that are separated by ";".` +
-    'For each option, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>) adding in subject the propers gitmoji icons:' +
+    `I'll enter a git diff, and your job is to convert it into a useful commit message and make ${numOptions} options that are separated by ";;;".` +
+    'For each option' +
+    'Do not preface the commit message with anything, use the present tense, return the full sentence.' +
+    'Use the conventional commits specification (<type>(<scope>): <gitmoji><subject>).' +
+    'type section must be lowercase.' +
+    'scope section is optional.' +
+    'gitmoji section collect one or more gitmoji you select analysing subject section.' +
+    'subject section first line must be at maximun 50 chars long:' +
     diff
 
   if (!await filterApi({ prompt, filterFee: args['filter-fee'], numCompletion: numOptions })) process.exit(1)
 
   const { text } = await api.sendMessage(prompt)
 
-  const msgs = text.split(';').map((msg) => msg.trim()).map(msg => addGitmojiToCommitMessage(msg))
+  const msgs = text.split(';;;')
 
   // add regenerate option
   msgs.push(REGENERATE_MSG)
@@ -103,7 +113,7 @@ const generateListCommits = async (diff, numOptions = 5) => {
   makeCommit(answer.commit)
 }
 
-async function generateAICommit () {
+async function generateAICommit() {
   const isGitRepository = checkGitRepository()
 
   if (!isGitRepository) {
