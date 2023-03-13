@@ -139,7 +139,7 @@ async function generateAICommit () {
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const lElement = stagedFiles[lIndex].trim()
     if (lElement) {
-      const diff = execSync('git diff --staged "' + lElement + '"')
+      const diff = execSync('git diff -U0 --staged "' + lElement + '"')
         .toString()
         .trim()
 
