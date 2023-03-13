@@ -36,8 +36,8 @@ const generateSingleCommit = async (diff) => {
     "I'll enter a git diff, and your job is to convert it into a useful commit message." +
     'Do not preface the commit message with anything, use the present tense, return the full sentence.' +
     'Use the conventional commits specification (<type>(<scope>): <gitmoji><subject>).' +
-    'type section must be lowercase.' +
-    'scope section is optional.' +
+    'type section must be lowercase and selected analysing subject section.' +
+    'scope section is optional and selected analysing diff.' +
     'gitmoji section collect one or more gitmoji you select analysing subject section.' +
     'subject section first line must be at maximun 50 chars long:' +
     diff
@@ -81,8 +81,8 @@ const generateListCommits = async (diff, numOptions = 5) => {
     'For each option' +
     'Do not preface the commit message with anything, use the present tense, return the full sentence.' +
     'Use the conventional commits specification (<type>(<scope>): <gitmoji><subject>).' +
-    'type section must be lowercase.' +
-    'scope section is optional.' +
+    'type section must be lowercase and selected analysing subject section.' +
+    'scope section is optional and selected analysing diff.' +
     'gitmoji section collect one or more gitmoji you select analysing subject section.' +
     'subject section first line must be at maximun 50 chars long:' +
     diff
