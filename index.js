@@ -37,7 +37,7 @@ const generateSingleCommit = async (diff) => {
     'using the conventional commits specification (<type>(<scope>): <gitmoji><subject><body>).',
     'type must be lowercase.',
     'scope is optional based on file in diff.',
-    'gitmoji is a gitmoji string bases on type.',
+    'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line based on file in diff and must be at maximum 50 chars long.',
     'body is a markdown bullet list and every line must be at maximum 100 chars long.',
     diff
