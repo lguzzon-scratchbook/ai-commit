@@ -33,7 +33,7 @@ const makeCommit = (input, lFilename) => {
 const generateSingleCommit = async (diff) => {
   const prompt = [
     'I want you to act as the author of a commit message in git.',
-    "I'll enter a git diff, and your job is to convert it into a useful commit message,",
+    "I'll enter a git diff, and your job is to convert it into a useful commit message not referring to tickets,",
     'using the conventional commits specification (<type>(<scope>): <gitmoji><subject><body>).',
     'type must be lowercase.',
     'scope is optional.',
@@ -66,7 +66,7 @@ const generateSingleCommit = async (diff) => {
         lSplitIndex += 90
       }
       if (lSplitIndex > 90) {
-        aPrevious.push('  ' + lCurrent.substring(lSplitIndex - 90))
+        aPrevious.push('  ' + lCurrent.substring(lSplitIndexStart))
       } else aPrevious.push(lCurrent)
       return aPrevious
     }, []).join('\n')
