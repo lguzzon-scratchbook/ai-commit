@@ -39,7 +39,7 @@ const generateSingleCommit = async (diff) => {
     'scope is optional based on file in diff.',
     'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line based on file in diff and must be at maximum 50 chars long.',
-    'body is a markdown bullet list and every line must be at maximum 100 chars long.',
+    'body is a markdown bullet list and every bullet line  must be at maximum 100 chars long, no co-authors, no tickets refs.',
     diff
   ].join('\n')
 
@@ -47,8 +47,8 @@ const generateSingleCommit = async (diff) => {
 
   const { text } = await api.sendMessage(prompt)
 
-  // const lText = text.split('. ').join('.\n')
-  const lText = text
+  const lText = text.split('. ').join('.\n')
+  // const lText = text
 
   console.log(
     `Proposed Commit:\n------------------------------\n${lText}\n------------------------------`
