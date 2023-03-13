@@ -130,7 +130,50 @@ async function generateAICommit () {
     console.error('This is not a git repository 🙅‍♂️')
     process.exit(1)
   }
+  if (args.all) {
+    await commitAllFiles()
+  } else await commitEachFile()
+}
 
+await generateAICommit()
+
+async function commitAllFiles () {
+  const diff = execSync('git diff -U0 --staged').toString().trim()
+
+  // Handle empty diff
+  if (!diff) {
+    console.log('No changes to commit 🙅')
+    console.log(
+      'May be you forgot to add the files? Try git add . and then run this script again.'
+    )
+    process.exit(1)
+  }
+
+  const lText = await generateSingleCommit(diff)
+
+  if (args.force) {
+    makeCommit(lText, '.')
+    return
+  }
+
+  const answer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'continue',
+      message: 'Do you want to continue?',
+      default: true
+    }
+  ])
+
+  if (!answer.continue) {
+    console.log('Commit aborted by user 🙅‍♂️')
+    process.exit(1)
+  }
+
+  makeCommit(lText, '.')
+}
+
+async function commitEachFile () {
   const stagedFiles = execSync('git diff --cached --name-only')
     .toString()
     .trim()
@@ -179,5 +222,3 @@ async function generateAICommit () {
     }
   }
 }
-
-await generateAICommit()
