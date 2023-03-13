@@ -36,10 +36,10 @@ const generateSingleCommit = async (diff) => {
     "I'll enter a git diff, and your job is to convert it into a useful commit message,",
     'using the conventional commits specification (<type>(<scope>): <gitmoji><subject><body>).',
     'type must be lowercase.',
-    'scope is optional based on file in diff.',
+    'scope is optional.',
     'gitmoji is a gitmoji string associated to type.',
-    'subject is only a summary line based on file in diff and must be at maximum 50 chars long.',
-    'body is a markdown bullet list and every bullet line  must be at maximum 100 chars long, no co-authors, no tickets refs.',
+    'subject is only a summary line and must be at maximum 50 chars long.',
+    'body is a detailed list and every line must be at maximum 100 chars long:',
     diff
   ].join('\n')
 
@@ -48,22 +48,21 @@ const generateSingleCommit = async (diff) => {
   const { text } = await api.sendMessage(prompt)
 
   const lText = text
-    .split('. ')
-    .join('.\n')
     .split('\n')
     .reduce((aPrevious, aCurrent) => {
       const lCurrent = aCurrent.trim()
+      let lSplitIndexStart = 0
       let lSplitIndex = 90
       while (lCurrent.length >= lSplitIndex) {
+        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
         if (lSplitIndex > 90) {
           aPrevious.push(
-            '  ' + lCurrent.substring(lSplitIndex - 90, lSplitIndex)
+            '  ' + lCurrent.substring(lSplitIndexStart, lSplitIndex)
           )
         } else {
-          aPrevious.push(
-            lCurrent.substring(lSplitIndex - 90, lSplitIndex)
-          )
+          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
         }
+        lSplitIndexStart = lSplitIndex
         lSplitIndex += 90
       }
       if (lSplitIndex > 90) {
