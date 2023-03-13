@@ -47,7 +47,30 @@ const generateSingleCommit = async (diff) => {
 
   const { text } = await api.sendMessage(prompt)
 
-  const lText = text.split('. ').join('.\n')
+  const lText = text
+    .split('. ')
+    .join('.\n')
+    .split('\n')
+    .reduce((aPrevious, aCurrent) => {
+      const lCurrent = aCurrent.trim()
+      let lSplitIndex = 90
+      while (lCurrent.length >= lSplitIndex) {
+        if (lSplitIndex > 90) {
+          aPrevious.push(
+            '  ' + lCurrent.substring(lSplitIndex - 90, lSplitIndex)
+          )
+        } else {
+          aPrevious.push(
+            lCurrent.substring(lSplitIndex - 90, lSplitIndex)
+          )
+        }
+        lSplitIndex += 90
+      }
+      if (lSplitIndex > 90) {
+        aPrevious.push('  ' + lCurrent.substring(lSplitIndex - 90))
+      } else aPrevious.push(lCurrent)
+      return aPrevious
+    }, []).join('\n')
   // const lText = text
 
   console.log(
