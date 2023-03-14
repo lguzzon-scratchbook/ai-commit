@@ -33,47 +33,23 @@ const makeCommit = (input, lFilename) => {
 const generateSingleCommit = async (diff) => {
   const prompt = [
     'I want you to act as the author of a commit message in git.',
-    "I'll enter a git diff, and your job is to convert it into a useful commit message not referring to tickets,",
-    'using the conventional commits specification (<type>(<scope>): <gitmoji><subject><body>).',
+    "I'll enter a git diff, and your job is to convert it into a useful commit message not referring to tickets or co-authors or further explanations,",
+    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><details>) nothing more.',
     'type must be lowercase.',
-    'scope is optional.',
+    'scope is optional and refers to file or directory.',
     'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line and must be at maximum 50 chars long.',
-    'body is a detailed list and every line must be at maximum 100 chars long:',
+    'details is a markdown usorted list of the changes/updates/deletes/addition occurred',
+    'given this git diff:',
     diff
   ].join('\n')
-
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
+  const lMessagge = await api.sendMessage(prompt)
+  const { text } = lMessagge
 
-  const { text } = await api.sendMessage(prompt)
-
-  const lText = text
-    .split('\n')
-    .reduce((aPrevious, aCurrent) => {
-      const lCurrent = aCurrent.trim()
-      let lSplitIndexStart = 0
-      let lSplitIndex = 90
-      while (lCurrent.length >= lSplitIndex) {
-        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
-        if (lSplitIndex > 90) {
-          aPrevious.push(
-            '  ' + lCurrent.substring(lSplitIndexStart, lSplitIndex)
-          )
-        } else {
-          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
-        }
-        lSplitIndexStart = lSplitIndex
-        lSplitIndex += 90
-      }
-      if (lSplitIndex > 90) {
-        aPrevious.push('  ' + lCurrent.substring(lSplitIndexStart))
-      } else aPrevious.push(lCurrent)
-      return aPrevious
-    }, []).join('\n')
-  // const lText = text
-
+  const lText = split90(text)
   console.log(
-    `Proposed Commit:\n------------------------------\n${lText}\n------------------------------`
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
   return lText
 }
@@ -121,6 +97,32 @@ const generateListCommits = async (diff, numOptions = 5) => {
   }
 
   makeCommit(answer.commit)
+}
+
+function split90 (text) {
+  return text
+    .split('\n')
+    .reduce((aPrevious, aCurrent) => {
+      const lCurrent = aCurrent.trim()
+      let lSplitIndexStart = 0
+      let lSplitIndex = 90
+      while (lCurrent.length >= lSplitIndex) {
+        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
+        if (lSplitIndex > 90) {
+          aPrevious.push(
+            '  ' + lCurrent.substring(lSplitIndexStart, lSplitIndex)
+          )
+        } else {
+          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
+        }
+        lSplitIndexStart = lSplitIndex
+        lSplitIndex += 90
+      }
+      if (lSplitIndex > 90) {
+        aPrevious.push('  ' + lCurrent.substring(lSplitIndexStart))
+      } else { aPrevious.push(lCurrent) }
+      return aPrevious
+    }, []).join('\n')
 }
 
 async function generateAICommit () {
