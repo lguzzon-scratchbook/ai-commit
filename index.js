@@ -33,13 +33,37 @@ const makeCommit = (input, lFilename) => {
 const generateSingleCommit = async (diff) => {
   const prompt = [
     'I want you to act as the author of a commit message in git.',
-    "I'll enter a git diff, and your job is to convert it into a useful commit message not referring to tickets or co-authors or further explanations,",
+    "I'll enter a git diff, and your job is to convert it into a useful commit message no tickets or co-authors or further explanations,",
     'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><details>) nothing more.',
     'type must be lowercase.',
     'scope is optional and refers to file or directory.',
     'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line and must be at maximum 50 chars long.',
     'details is a markdown usorted list of the changes/updates/deletes/addition occurred',
+    'given this git diff:',
+    diff
+  ].join('\n')
+  if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
+  const lMessagge = await api.sendMessage(prompt)
+  const { text } = lMessagge
+
+  const lText = split90(text)
+  console.log(
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
+  )
+  return lText
+}
+
+const generateSingleCommitAll = async (diff) => {
+  const prompt = [
+    'I want you to act as the author of a commit message in git.',
+    "I'll enter a git diff, and your job is to convert it into a useful commit message no tickets or co-authors or further explanations,",
+    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><details>) nothing more.',
+    'type must be lowercase.',
+    'scope is optional and refers to most important files or directoryies.',
+    'gitmoji is a gitmoji string associated to type.',
+    'subject is only a summary line and must be at maximum 50 chars long.',
+    'details is a markdown usorted list of the changes/updates/deletes/addition occurred in all files',
     'given this git diff:',
     diff
   ].join('\n')
@@ -151,7 +175,7 @@ async function commitAllFiles () {
     process.exit(1)
   }
 
-  const lText = await generateSingleCommit(diff)
+  const lText = await generateSingleCommitAll(diff)
 
   if (args.force) {
     makeCommit(lText, '.')
