@@ -12,8 +12,6 @@ dotenv.config()
 
 const args = getArgs()
 
-const REGENERATE_MSG = '♻️ Regenerate Commit Messages'
-
 const apiKey = args.apiKey || process.env.OPENAI_API_KEY
 if (!apiKey) {
   console.error('Please set the OPENAI_API_KEY environment variable.')
@@ -34,12 +32,13 @@ const generateSingleCommit = async (diff) => {
   const prompt = [
     'I want you to act as the author of a commit message in git.',
     "I'll enter a git diff, and your job is to convert it into a useful commit message no tickets or co-authors or further explanations,",
-    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><details>) nothing more.',
+    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><comments>) nothing more.',
+    'Readability is top priority. Write only the most important comments about the diff.',
     'type must be lowercase.',
     'scope is optional and refers to file or directory.',
     'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line and must be at maximum 50 chars long.',
-    'details is a markdown usorted list of the changes/updates/deletes/addition occurred',
+    'comments is a markdown usorted list of the changes/updates/deletes/addition occurred',
     'given this git diff:',
     diff
   ].join('\n')
@@ -58,12 +57,13 @@ const generateSingleCommitAll = async (diff) => {
   const prompt = [
     'I want you to act as the author of a commit message in git.',
     "I'll enter a git diff, and your job is to convert it into a useful commit message no tickets or co-authors or further explanations,",
-    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><details>) nothing more.',
+    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><comments>) nothing more.',
+    'Readability is top priority. Write only the most important comments about the diff.',
     'type must be lowercase.',
     'scope is optional and refers to most important files or directoryies.',
     'gitmoji is a gitmoji string associated to type.',
     'subject is only a summary line and must be at maximum 50 chars long.',
-    'details is a markdown usorted list of the changes/updates/deletes/addition occurred in all files',
+    'comments is a markdown usorted list of the changes/updates/deletes/addition occurred in all files',
     'given this git diff:',
     diff
   ].join('\n')
@@ -76,51 +76,6 @@ const generateSingleCommitAll = async (diff) => {
     `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
   return lText
-}
-
-const generateListCommits = async (diff, numOptions = 5) => {
-  const prompt =
-    'I want you to act as the author of a commit message in git.' +
-    `I'll enter a git diff, and your job is to convert it into a useful commit message and make ${numOptions} options that are separated by ";;;".` +
-    'For each option' +
-    'Do not preface the commit message with anything, use the present tense, return the full sentence.' +
-    'Use the conventional commits specification (<type>(<scope>): <gitmoji><subject>).' +
-    'type section must be lowercase and selected analysing subject section.' +
-    'scope section is optional and selected analysing context.' +
-    'gitmoji section collect one or more gitmoji you select analysing subject section.' +
-    'subject section first line must be at maximun 50 chars long:' +
-    diff
-
-  if (
-    !(await filterApi({
-      prompt,
-      filterFee: args['filter-fee'],
-      numCompletion: numOptions
-    }))
-  ) { process.exit(1) }
-
-  const { text } = await api.sendMessage(prompt)
-
-  const msgs = text.split(';;;')
-
-  // add regenerate option
-  msgs.push(REGENERATE_MSG)
-
-  const answer = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'commit',
-      message: 'Select a commit message',
-      choices: msgs
-    }
-  ])
-
-  if (answer.commit === REGENERATE_MSG) {
-    await generateListCommits(diff)
-    return
-  }
-
-  makeCommit(answer.commit)
 }
 
 function split90 (text) {
@@ -221,9 +176,7 @@ async function commitEachFile () {
         process.exit(1)
       }
 
-      const lText = args.list
-        ? await generateListCommits(diff)
-        : await generateSingleCommit(diff)
+      const lText = await generateSingleCommit(diff)
 
       if (args.force) {
         makeCommit(lText, lElement)
