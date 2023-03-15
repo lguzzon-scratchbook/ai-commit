@@ -42,7 +42,7 @@ const generateSingleCommit = async (diff) => {
     'Remember to:',
     '- Select a conventional commit type after analyzing the given git diff',
     '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
-    '- Select a gitmoji icon after analyzing the conventional commit type',
+    '- Select a gitmoji icon char after analyzing the given git diff',
     '- Keep the subject line to 40 characters or less',
     '- Provide a detailed description of the changes made in the git diff and nothing more'
   ].join('\n')
@@ -59,19 +59,21 @@ const generateSingleCommit = async (diff) => {
 
 const generateSingleCommitAll = async (diff) => {
   const prompt = [
-    'Generate git commit message based on the following git diff:',
-    diff,
-    'Use the conventional commit message format to respond:',
-    '+++',
-    '<type>(<scope>): <gitmoji> <subject>',
+    'Please provide a conventional commit message following this template:',
     '',
-    '<long_description>',
-    '+++',
-    'Provide a type for the changes you observed in the given git diff: <type>',
-    'Provide a scope for the changes you observed in the given git diff (e.g. file, directory, topic): <scope>',
-    'Provide a gitmoji text that best represents the <type>: <gitmoji>',
-    'Provide a subject for the changes you observed in the given git diff (40 characters or less): <subject>',
-    'Provide a detailed explanation of the changes made in the given git diff, do not include anything more than what is required: <long_description>'
+    'type(scope): gitmoji subject',
+    '',
+    'description',
+    '',
+    'Concisely describe the changes made in the following git diff:',
+    diff,
+    '',
+    'Remember to:',
+    '- Select a conventional commit type after analyzing the given git diff',
+    '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
+    '- Select a gitmoji icon char after analyzing the given git diff',
+    '- Keep the subject line to 40 characters or less',
+    '- Provide a detailed description of the changes made in the git diff and nothing more'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
