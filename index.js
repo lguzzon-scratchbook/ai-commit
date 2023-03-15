@@ -30,17 +30,9 @@ const makeCommit = (input, lFilename) => {
 
 const generateSingleCommit = async (diff) => {
   const prompt = [
-    'I want you to act as the author of a commit message in git.',
-    "I'll enter a git diff, and your job is to convert it into a useful commit message no tickets or co-authors or further explanations,",
-    'using the conventional commits specification (<type>(<scope>):<gitmoji><subject><comments>) nothing more.',
-    'Readability is top priority. Write only the most important comments about the diff.',
-    'type must be lowercase.',
-    'scope is optional and refers to file or directory.',
-    'gitmoji is a gitmoji string associated to type.',
-    'subject is only a summary line and must be at maximum 50 chars long.',
-    'comments is a markdown usorted list of the changes/updates/deletes/addition occurred',
-    'given this git diff:',
-    diff
+    'Can you help me generate a conventional commit message based on the following git diff?',
+    diff,
+    'Please format your answer to follow the conventional commit format, with a gitmoji at the beginning of the subject line that reflects the type of change made in the given git diff. Select the commit type and scope based on the changes made in the git diff. In the body of the commit message, provide a detailed explanation of all the changes in the git diff. Do not include anything more than what is required.'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
