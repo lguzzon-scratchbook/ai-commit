@@ -44,7 +44,7 @@ const generateSingleCommit = async (diff) => {
     '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
     '- Select a gitmoji icon char after analyzing the given git diff',
     '- Keep the subject line to 40 characters or less',
-    '- Provide a detailed description of the changes made in the git diff and nothing more'
+    '- Provide a detailed description of the changes/updates/addition/deletion made in the git diff and nothing more'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
@@ -73,7 +73,7 @@ const generateSingleCommitAll = async (diff) => {
     '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
     '- Select a gitmoji icon char after analyzing the given git diff',
     '- Keep the subject line to 40 characters or less',
-    '- Provide a detailed description of the changes made in the git diff and nothing more'
+    '- Provide a detailed description of the changes/updates/addition/deletion made for each file in the git diff and nothing more'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
