@@ -127,7 +127,7 @@ async function generateAICommit () {
 await generateAICommit()
 
 async function commitAllFiles () {
-  const diff = execSync('git diff -U0 --staged').toString().trim()
+  const diff = execSync('git diff -U1 --staged').toString().trim()
 
   // Handle empty diff
   if (!diff) {
@@ -171,7 +171,7 @@ async function commitEachFile () {
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const lElement = stagedFiles[lIndex].trim()
     if (lElement) {
-      const diff = execSync('git diff -U0 --staged "' + lElement + '"')
+      const diff = execSync('git diff -U1 --staged "' + lElement + '"')
         .toString()
         .trim()
 
