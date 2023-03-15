@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "jmsv.javascriptsnippetsstandard",
+    "nicoespeon.abracadabra",
+    "nucllear.vscode-extension-auto-import",
+    "nicoespeon.hocus-pocus",
+    "oderwat.indent-rainbow",
+    "ms-vscode.js-debug-nightly",
+    "idered.npm",
+    "standard.vscode-standard"
+  ]
+}
