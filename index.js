@@ -24,7 +24,7 @@ const api = new ChatGPTAPI({
 
 const makeCommit = (input, lFilename) => {
   console.log('Committing Message... 🚀 ')
-  execSync('git commit "' + lFilename + '" -F - ', { input })
+  execSync(`git commit "${lFilename}" -F - `, { input })
   console.log('Commit Successful! 🎉')
 }
 
@@ -97,7 +97,7 @@ function split90 (text) {
         while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
         if (lSplitIndex > 90) {
           aPrevious.push(
-            '  ' + lCurrent.substring(lSplitIndexStart, lSplitIndex)
+            `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
           )
         } else {
           aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
@@ -106,7 +106,7 @@ function split90 (text) {
         lSplitIndex += 90
       }
       if (lSplitIndex > 90) {
-        aPrevious.push('  ' + lCurrent.substring(lSplitIndexStart))
+        aPrevious.push(`  ${lCurrent.substring(lSplitIndexStart)}`)
       } else { aPrevious.push(lCurrent) }
       return aPrevious
     }, []).join('\n')
@@ -127,7 +127,7 @@ async function generateAICommit () {
 await generateAICommit()
 
 async function commitAllFiles () {
-  const diff = execSync('git diff -U1 --staged').toString().trim()
+  const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`).toString().trim()
 
   // Handle empty diff
   if (!diff) {
@@ -162,6 +162,10 @@ async function commitAllFiles () {
   makeCommit(lText, '.')
 }
 
+function getGitDiffUnified () {
+  return args.u || args.unified || 1
+}
+
 async function commitEachFile () {
   const stagedFiles = execSync('git diff --cached --name-only')
     .toString()
@@ -171,7 +175,7 @@ async function commitEachFile () {
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const lElement = stagedFiles[lIndex].trim()
     if (lElement) {
-      const diff = execSync('git diff -U1 --staged "' + lElement + '"')
+      const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
         .toString()
         .trim()
 
