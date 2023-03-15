@@ -30,9 +30,19 @@ const makeCommit = (input, lFilename) => {
 
 const generateSingleCommit = async (diff) => {
   const prompt = [
-    'Can you help me generate a conventional commit message based on the following git diff?',
+    'Generate git commit message based on the following git diff:',
     diff,
-    'Please format your answer to follow the conventional commit format, with a gitmoji at the beginning of the subject line that reflects the type of change made in the given git diff. Select the commit type and scope based on the changes made in the git diff. In the body of the commit message, provide a detailed explanation of all the changes in the git diff. Do not include anything more than what is required.'
+    'Use the conventional commit message format to respond:',
+    '+++',
+    '<type>(<scope>): <gitmoji> <subject>',
+    '',
+    '<long_description>',
+    '+++',
+    'Provide a type for the changes you observed in the given git diff: <type>',
+    'Provide a scope for the changes you observed in the given git diff (e.g. file, directory, topic): <scope>',
+    'Provide a gitmoji text that best represents the <type>: <gitmoji>',
+    'Provide a subject for the changes you observed in the given git diff (40 characters or less): <subject>',
+    'Provide a detailed explanation of the changes made in the given git diff, do not include anything more than what is required: <long_description>'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
@@ -47,9 +57,19 @@ const generateSingleCommit = async (diff) => {
 
 const generateSingleCommitAll = async (diff) => {
   const prompt = [
-    'Can you help me generate a conventional commit message based on the following git diff?',
+    'Generate git commit message based on the following git diff:',
     diff,
-    'Please format your answer to follow the conventional commit format, with a gitmoji at the beginning of the subject line that reflects the type of change made in the given git diff. Select the commit type and scope based on the changes made in the git diff. In the body of the commit message, provide a detailed explanation of all the changes in the git diff. Do not include anything more than what is required.'
+    'Use the conventional commit message format to respond:',
+    '+++',
+    '<type>(<scope>): <gitmoji> <subject>',
+    '',
+    '<long_description>',
+    '+++',
+    'Provide a type for the changes you observed in the given git diff: <type>',
+    'Provide a scope for the changes you observed in the given git diff (e.g. file, directory, topic): <scope>',
+    'Provide a gitmoji text that best represents the <type>: <gitmoji>',
+    'Provide a subject for the changes you observed in the given git diff (40 characters or less): <subject>',
+    'Provide a detailed explanation of the changes made in the given git diff, do not include anything more than what is required: <long_description>'
   ].join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessagge = await api.sendMessage(prompt)
