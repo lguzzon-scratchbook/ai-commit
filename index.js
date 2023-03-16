@@ -7,6 +7,8 @@ import inquirer from 'inquirer'
 import { getArgs, checkGitRepository } from './helpers.js'
 import { filterApi } from './filterApi.js'
 
+import semver from 'semver'
+
 import * as dotenv from 'dotenv'
 dotenv.config()
 
@@ -91,7 +93,45 @@ const prompts = {
   }
 }
 
-await generateAICommit()
+if (gcArgs.r || gcArgs.release) { commitRelease() } else {
+  await generateAICommit()
+}
+
+async function commitRelease () {
+  let latestTag = null
+  try {
+    latestTag = semver.clean(execSync('git describe --tags --abbrev=0 HEAD^')
+      .toString()
+      .trim())
+  } catch (error) {
+    latestTag = null
+  }
+  const lNextTag = latestTag ? semver.inc(latestTag, 'patch') : '0.0.0'
+  const commitsText = execSync(`git log ${latestTag}..HEAD --pretty=format:%s`)
+    .toString()
+    .trim()
+  const lPrompt = `Please provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commit text from the previous release. The commits text is as follows:\n${commitsText}`
+  const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim()
+  console.log('Next Tag -> ', lNextTag, ' => [', lMessage, ']')
+  if (!gcArgs.force) {
+    const answer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'continue',
+        message: 'Do you want to continue?',
+        default: true
+      }
+    ])
+    if (!answer.continue) {
+      console.log('Commit aborted by user 🙅‍♂️')
+      process.exit(1)
+    }
+  }
+  const gitFlowRelease = execSync(`git gfr "${lNextTag}" "${lMessage}"`)
+    .toString()
+    .trim()
+  console.log('🚀 ~ file: index.js:130 ~ commitRelease ~ gitFlowRelease:', gitFlowRelease)
+}
 
 async function commitAllFiles () {
   const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`).toString().trim()
