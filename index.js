@@ -22,12 +22,6 @@ const gcApi = new ChatGPTAPI({
   apiKey: gcApiKey
 })
 
-const makeCommit = (aInput, aFilename) => {
-  console.log('Committing Message... 🚀 ')
-  execSync(`git commit "${aFilename}" -F - `, { input: aInput })
-  console.log('Commit Successful! 🎉')
-}
-
 const prompts = {
   ok: function (aGitDiff) {
     return this.v02(aGitDiff)
@@ -95,70 +89,6 @@ const prompts = {
       '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
     ]
   }
-}
-
-const generateSingleCommit = async (aGitDiff) => {
-  const lPrompt = prompts.ok(aGitDiff).join('\n')
-  if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
-  const lMessage = await gcApi.sendMessage(lPrompt)
-  const { text } = lMessage
-
-  const lText = split90(text)
-  console.log(
-    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
-  )
-  return lText
-}
-
-const generateSingleCommitAll = async (aGitDiff) => {
-  const prompt = prompts.oks(aGitDiff).join('\n')
-  if (!(await filterApi({ prompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
-  const lMessage = await gcApi.sendMessage(prompt)
-  const { text } = lMessage
-
-  const lText = split90(text)
-  console.log(
-    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
-  )
-  return lText
-}
-
-function split90 (aText) {
-  return aText
-    .split('\n')
-    .reduce((aPrevious, aCurrent) => {
-      const lCurrent = aCurrent.trim()
-      let lSplitIndexStart = 0
-      let lSplitIndex = 90
-      while (lCurrent.length >= lSplitIndex) {
-        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
-        if (lSplitIndex > 90) {
-          aPrevious.push(
-            `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
-          )
-        } else {
-          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
-        }
-        lSplitIndexStart = lSplitIndex
-        lSplitIndex += 90
-      }
-      if (lSplitIndex > 90) {
-        aPrevious.push(`  ${lCurrent.substring(lSplitIndexStart)}`)
-      } else { aPrevious.push(lCurrent) }
-      return aPrevious
-    }, []).join('\n')
-}
-
-async function generateAICommit () {
-  const isGitRepository = checkGitRepository()
-
-  if (!isGitRepository) {
-    console.error('This is not a git repository 🙅‍♂️')
-    process.exit(1)
-  }
-  if (gcArgs.all) {
-    await commitAllFiles()
-  } else await commitEachFile()
 }
 
 await generateAICommit()
@@ -247,4 +177,74 @@ async function commitEachFile () {
       makeCommit(lText, lElement)
     }
   }
+}
+
+function makeCommit (aInput, aFilename) {
+  console.log('Committing Message... 🚀 ')
+  execSync(`git commit "${aFilename}" -F - `, { input: aInput })
+  console.log('Commit Successful! 🎉')
+}
+
+async function generateSingleCommit (aGitDiff) {
+  const lPrompt = prompts.ok(aGitDiff).join('\n')
+  if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  const lMessage = await gcApi.sendMessage(lPrompt)
+  const { text } = lMessage
+
+  const lText = split90(text)
+  console.log(
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
+  )
+  return lText
+}
+
+async function generateSingleCommitAll (aGitDiff) {
+  const prompt = prompts.oks(aGitDiff).join('\n')
+  if (!(await filterApi({ prompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  const lMessage = await gcApi.sendMessage(prompt)
+  const { text } = lMessage
+
+  const lText = split90(text)
+  console.log(
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
+  )
+  return lText
+}
+
+function split90 (aText) {
+  return aText
+    .split('\n')
+    .reduce((aPrevious, aCurrent) => {
+      const lCurrent = aCurrent.trim()
+      let lSplitIndexStart = 0
+      let lSplitIndex = 90
+      while (lCurrent.length >= lSplitIndex) {
+        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
+        if (lSplitIndex > 90) {
+          aPrevious.push(
+            `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
+          )
+        } else {
+          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
+        }
+        lSplitIndexStart = lSplitIndex
+        lSplitIndex += 90
+      }
+      if (lSplitIndex > 90) {
+        aPrevious.push(`  ${lCurrent.substring(lSplitIndexStart)}`)
+      } else { aPrevious.push(lCurrent) }
+      return aPrevious
+    }, []).join('\n')
+}
+
+async function generateAICommit () {
+  const isGitRepository = checkGitRepository()
+
+  if (!isGitRepository) {
+    console.error('This is not a git repository 🙅‍♂️')
+    process.exit(1)
+  }
+  if (gcArgs.all) {
+    await commitAllFiles()
+  } else await commitEachFile()
 }
