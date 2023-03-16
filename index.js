@@ -10,21 +10,21 @@ import { filterApi } from './filterApi.js'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
-const args = getArgs()
+const gcArgs = getArgs()
 
-const apiKey = args.apiKey || process.env.OPENAI_API_KEY
-if (!apiKey) {
+const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
+if (!gcApiKey) {
   console.error('Please set the OPENAI_API_KEY environment variable.')
   process.exit(1)
 }
 
-const api = new ChatGPTAPI({
-  apiKey
+const gcApi = new ChatGPTAPI({
+  apiKey: gcApiKey
 })
 
-const makeCommit = (input, lFilename) => {
+const makeCommit = (aInput, aFilename) => {
   console.log('Committing Message... 🚀 ')
-  execSync(`git commit "${lFilename}" -F - `, { input })
+  execSync(`git commit "${aFilename}" -F - `, { input: aInput })
   console.log('Commit Successful! 🎉')
 }
 
@@ -99,8 +99,8 @@ const prompts = {
 
 const generateSingleCommit = async (aGitDiff) => {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
-  if (!(await filterApi({ prompt: lPrompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
-  const lMessage = await api.sendMessage(lPrompt)
+  if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  const lMessage = await gcApi.sendMessage(lPrompt)
   const { text } = lMessage
 
   const lText = split90(text)
@@ -112,8 +112,8 @@ const generateSingleCommit = async (aGitDiff) => {
 
 const generateSingleCommitAll = async (aGitDiff) => {
   const prompt = prompts.oks(aGitDiff).join('\n')
-  if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
-  const lMessage = await api.sendMessage(prompt)
+  if (!(await filterApi({ prompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  const lMessage = await gcApi.sendMessage(prompt)
   const { text } = lMessage
 
   const lText = split90(text)
@@ -123,8 +123,8 @@ const generateSingleCommitAll = async (aGitDiff) => {
   return lText
 }
 
-function split90 (text) {
-  return text
+function split90 (aText) {
+  return aText
     .split('\n')
     .reduce((aPrevious, aCurrent) => {
       const lCurrent = aCurrent.trim()
@@ -156,7 +156,7 @@ async function generateAICommit () {
     console.error('This is not a git repository 🙅‍♂️')
     process.exit(1)
   }
-  if (args.all) {
+  if (gcArgs.all) {
     await commitAllFiles()
   } else await commitEachFile()
 }
@@ -177,7 +177,7 @@ async function commitAllFiles () {
 
   const lText = await generateSingleCommitAll(diff)
 
-  if (args.force) {
+  if (gcArgs.force) {
     makeCommit(lText, '.')
     return
   }
@@ -200,7 +200,7 @@ async function commitAllFiles () {
 }
 
 function getGitDiffUnified () {
-  return args.u || args.unified || 1
+  return gcArgs.u || gcArgs.unified || 1
 }
 
 async function commitEachFile () {
@@ -228,7 +228,7 @@ async function commitEachFile () {
 
       const lText = await generateSingleCommit(diff)
 
-      if (!args.force) {
+      if (!gcArgs.force) {
         const answer = await inquirer.prompt([
           {
             type: 'confirm',
