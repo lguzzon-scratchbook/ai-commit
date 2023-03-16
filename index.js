@@ -28,27 +28,48 @@ const makeCommit = (input, lFilename) => {
   console.log('Commit Successful! 🎉')
 }
 
-const generateSingleCommit = async (diff) => {
-  const prompt = [
-    'Please provide a conventional commit message following this template:',
-    '',
-    'type(scope): gitmoji subject',
-    '',
-    'description',
-    '',
-    'Concisely describe the changes made in the following git diff:',
-    diff,
-    '',
-    'Remember to:',
-    '- Select a conventional commit type after analyzing the given git diff',
-    '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
-    '- Select a gitmoji icon char after analyzing the given git diff',
-    '- Keep the subject line to 40 characters or less',
-    '- Provide a detailed description of the changes/updates/addition/deletion made in the git diff and nothing more'
-  ].join('\n')
-  if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
-  const lMessagge = await api.sendMessage(prompt)
-  const { text } = lMessagge
+const prompts = {
+  ok: function (aGitDiff) {
+    return this.v01(aGitDiff)
+  },
+  oks: function (aGitDiff) { return this.v01s(aGitDiff) },
+  v01: function (aGitDiff) {
+    return [
+      ...this.v01_head(aGitDiff),
+      '- Provide a detailed description as a bullet list of the changes/updates/addition/deletion made in the git diff and nothing more'
+    ]
+  },
+  v01_head: function (aGitDiff) {
+    return [
+      'Please provide a conventional commit message following this template:',
+      'type(scope): gitmoji subject',
+      '',
+      'description',
+      '',
+      'Concisely describe the changes made in the following git diff:',
+      aGitDiff,
+      '',
+      'Remember to:',
+      '- Select a conventional commit type after analyzing the given git diff',
+      '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff (optional)',
+      '- You must select a gitmoji icon char based on conventional commit type selected',
+      '- The conventional commit subject starts with an imperative verb (max 40 chars)'
+    ]
+  },
+  v01s: function (aGitDiff) {
+    return [
+      ...this.v01_head(aGitDiff),
+      '- Provide a detailed description as a bullet list of the changes/updates/addition/deletion made for each file in the git diff and nothing more'
+    ]
+  }
+}
+
+const generateSingleCommit = async (aGitDiff) => {
+  const lPrompt = prompts.ok(aGitDiff).join('\n')
+  console.log('🚀 ~ file: index.js:87 ~ generateSingleCommit ~ lPrompt:', lPrompt)
+  if (!(await filterApi({ prompt: lPrompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
+  const lMessage = await api.sendMessage(lPrompt)
+  const { text } = lMessage
 
   const lText = split90(text)
   console.log(
@@ -57,27 +78,11 @@ const generateSingleCommit = async (diff) => {
   return lText
 }
 
-const generateSingleCommitAll = async (diff) => {
-  const prompt = [
-    'Please provide a conventional commit message following this template:',
-    '',
-    'type(scope): gitmoji subject',
-    '',
-    'description',
-    '',
-    'Concisely describe the changes made in the following git diff:',
-    diff,
-    '',
-    'Remember to:',
-    '- Select a conventional commit type after analyzing the given git diff',
-    '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff',
-    '- Select a gitmoji icon char after analyzing the given git diff',
-    '- Keep the subject line to 40 characters or less',
-    '- Provide a detailed description of the changes/updates/addition/deletion made for each file in the git diff and nothing more'
-  ].join('\n')
+const generateSingleCommitAll = async (aGitDiff) => {
+  const prompt = prompts.oks(aGitDiff).join('\n')
   if (!(await filterApi({ prompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
-  const lMessagge = await api.sendMessage(prompt)
-  const { text } = lMessagge
+  const lMessage = await api.sendMessage(prompt)
+  const { text } = lMessage
 
   const lText = split90(text)
   console.log(
