@@ -36,37 +36,36 @@ const prompts = {
   v01: function (aGitDiff) {
     return [
       ...this.v01_head(aGitDiff),
-      '- List all changes, updates, additions, and deletions made in the git diff in detail, using bullet points and nothing else!'
+      '- Ensure that the description is a list with all changes, updates, additions, and deletions made in the git diff in detail, using bullet points and nothing else!: <description>'
     ]
   },
   v01_head: function (aGitDiff) {
     return [
       'Please provide a conventional commit message following this template:',
-      'type(scope): gitmoji subject',
+      '<type>(scope): <gitmoji> <subject>',
       '',
-      'description',
+      '<description>',
       '',
-      'Concisely describe the changes made in the following git diff:',
+      'Given the following git diff:',
       aGitDiff,
       '',
       'Analyze the arguments of the given git diff using a hierarchical table of contents (at least 3 levels) and make sure to:',
-      '- Select a conventional commit type',
-      '- If necessary, select a conventional commit scope from files, directories, or topics',
-      '- Choose a gitmoji icon character that corresponds to the conventional commit type you selected',
-      '- Ensure that the conventional commit subject begins with an imperative verb and is no longer than 40 characters!'
+      '- Select a type: <type>',
+      '- If necessary, select a scope from files, directories, or topics: <scope>',
+      '- Choose a gitmoji icon character  that corresponds to the <type> you selected: <gitmoji>',
+      '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters!: <subject>'
     ]
   },
   v01s: function (aGitDiff) {
     return [
       ...this.v01_head(aGitDiff),
-      '- Provide a detailed description as a bullet list of the changes/updates/addition/deletion made for each file in the git diff and nothing more'
+      '- Ensure that the description is a list with all changes, updates, additions, and deletions made for each file in the git diff in detail, using bullet points and nothing else!: <description>'
     ]
   }
 }
 
 const generateSingleCommit = async (aGitDiff) => {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
-  console.log('🚀 ~ file: index.js:87 ~ generateSingleCommit ~ lPrompt:', lPrompt)
   if (!(await filterApi({ prompt: lPrompt, filterFee: args['filter-fee'] }))) { process.exit(1) }
   const lMessage = await api.sendMessage(lPrompt)
   const { text } = lMessage
