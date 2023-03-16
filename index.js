@@ -97,7 +97,7 @@ if (gcArgs.r || gcArgs.release) { commitRelease() } else {
   await generateAICommit()
 }
 
-async function commitRelease () {
+async function commitRelease() {
   let latestTag = null
   try {
     latestTag = semver.clean(execSync('git describe --tags --abbrev=0 HEAD^')
@@ -107,10 +107,15 @@ async function commitRelease () {
     latestTag = null
   }
   const lNextTag = latestTag ? semver.inc(latestTag, 'patch') : '0.0.0'
-  const commitsText = execSync(`git log ${latestTag}..HEAD --pretty=format:%s`)
+  const lLatestCommit = execSync(`git log ${latestTag}..HEAD --pretty=format:%H | tail -1`)
+    .toString()
+    .trim()
+  console.log("🚀 ~ file: index.js:112 ~ commitRelease ~ lLatestCommit:", lLatestCommit)
+  const commitsText = execSync(`git log ${lLatestCommit}..HEAD --pretty=format:%s`)
     .toString()
     .trim()
   const lPrompt = `Please provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commit text from the previous release. The commits text is as follows:\n${commitsText}`
+  console.log("🚀 ~ file: index.js:115 ~ commitRelease ~ lPrompt:", lPrompt)
   const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim()
   console.log('Next Tag -> ', lNextTag, ' => [', lMessage, ']')
   if (!gcArgs.force) {
@@ -133,7 +138,7 @@ async function commitRelease () {
   console.log('🚀 ~ file: index.js:130 ~ commitRelease ~ gitFlowRelease:', gitFlowRelease)
 }
 
-async function commitAllFiles () {
+async function commitAllFiles() {
   const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`).toString().trim()
 
   // Handle empty diff
@@ -169,11 +174,11 @@ async function commitAllFiles () {
   makeCommit(lText, '.')
 }
 
-function getGitDiffUnified () {
+function getGitDiffUnified() {
   return gcArgs.u || gcArgs.unified || 1
 }
 
-async function commitEachFile () {
+async function commitEachFile() {
   const stagedFiles = execSync('git diff --cached --name-only')
     .toString()
     .trim()
@@ -219,13 +224,13 @@ async function commitEachFile () {
   }
 }
 
-function makeCommit (aInput, aFilename) {
+function makeCommit(aInput, aFilename) {
   console.log('Committing Message... 🚀 ')
   execSync(`git commit "${aFilename}" -F - `, { input: aInput })
   console.log('Commit Successful! 🎉')
 }
 
-async function generateSingleCommit (aGitDiff) {
+async function generateSingleCommit(aGitDiff) {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   const lMessage = await gcApi.sendMessage(lPrompt)
@@ -238,7 +243,7 @@ async function generateSingleCommit (aGitDiff) {
   return lText
 }
 
-async function generateSingleCommitAll (aGitDiff) {
+async function generateSingleCommitAll(aGitDiff) {
   const prompt = prompts.oks(aGitDiff).join('\n')
   if (!(await filterApi({ prompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   const lMessage = await gcApi.sendMessage(prompt)
@@ -251,7 +256,7 @@ async function generateSingleCommitAll (aGitDiff) {
   return lText
 }
 
-function split90 (aText) {
+function split90(aText) {
   return aText
     .split('\n')
     .reduce((aPrevious, aCurrent) => {
@@ -277,7 +282,7 @@ function split90 (aText) {
     }, []).join('\n')
 }
 
-async function generateAICommit () {
+async function generateAICommit() {
   const isGitRepository = checkGitRepository()
 
   if (!isGitRepository) {
