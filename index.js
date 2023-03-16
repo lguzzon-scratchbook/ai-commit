@@ -107,7 +107,7 @@ async function commitRelease () {
     latestTag = null
   }
   const lNextTag = latestTag ? semver.inc(latestTag, 'patch') : '0.0.0'
-  const commitsText = execSync(`git log ${latestTag}..HEAD --pretty=format:%s`)
+  const commitsText = execSync(`git log ${latestTag}^..HEAD --pretty=format:%s`)
     .toString()
     .trim()
   const lPrompt = `Please provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commit text from the previous release. The commits text is as follows:\n${commitsText}`
