@@ -178,6 +178,7 @@ async function commitEachFile () {
 
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const lElement = stagedFiles[lIndex].trim()
+    console.log()
     if (lElement) {
       const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
         .toString()
@@ -194,23 +195,20 @@ async function commitEachFile () {
 
       const lText = await generateSingleCommit(diff)
 
-      if (args.force) {
-        makeCommit(lText, lElement)
-        continue
-      }
+      if (!args.force) {
+        const answer = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'continue',
+            message: 'Do you want to continue?',
+            default: true
+          }
+        ])
 
-      const answer = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'continue',
-          message: 'Do you want to continue?',
-          default: true
+        if (!answer.continue) {
+          console.log('Commit aborted by user 🙅‍♂️')
+          process.exit(1)
         }
-      ])
-
-      if (!answer.continue) {
-        console.log('Commit aborted by user 🙅‍♂️')
-        process.exit(1)
       }
 
       makeCommit(lText, lElement)
