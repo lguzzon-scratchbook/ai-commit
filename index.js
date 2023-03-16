@@ -36,7 +36,7 @@ const prompts = {
   v01: function (aGitDiff) {
     return [
       ...this.v01_head(aGitDiff),
-      '- Provide a detailed description as a bullet list of the changes/updates/addition/deletion made in the git diff and nothing more'
+      '- List all changes, updates, additions, and deletions made in the git diff in detail, using bullet points and nothing else!'
     ]
   },
   v01_head: function (aGitDiff) {
@@ -49,11 +49,11 @@ const prompts = {
       'Concisely describe the changes made in the following git diff:',
       aGitDiff,
       '',
-      'Remember to:',
-      '- Select a conventional commit type after analyzing the given git diff',
-      '- Choose a conventional commit scope from files/directory/topics after analyzing the given git diff (optional)',
-      '- You must select a gitmoji icon char based on conventional commit type selected',
-      '- The conventional commit subject starts with an imperative verb (max 40 chars)'
+      'Analyze the arguments of the given git diff using a hierarchical table of contents (at least 3 levels) and make sure to:',
+      '- Select a conventional commit type',
+      '- If necessary, select a conventional commit scope from files, directories, or topics',
+      '- Choose a gitmoji icon character that corresponds to the conventional commit type you selected',
+      '- Ensure that the conventional commit subject begins with an imperative verb and is no longer than 40 characters!'
     ]
   },
   v01s: function (aGitDiff) {
