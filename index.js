@@ -171,7 +171,7 @@ async function commitRelease () {
     .trim()
   const lPrompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
   console.log('Release get summary ...')
-  const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim()
+  const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim().replaceAll('"', '')
   console.log('Release Tag -> ', lNextTag, ' Msg => [', lMessage, ']')
   if (!gcArgs.force) {
     const answer = await inquirer.prompt([
