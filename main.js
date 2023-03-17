@@ -106,20 +106,20 @@ const prompts = {
     const lcEndGitDiffTag = 'End-GitDiff'
     return [
       'Please provide a conventional commit message following this template:',
-            `${separator(lcBeginTemplateTag)}`,
-            '<type>(scope): <gitmoji> - <subject>',
-            '',
-            '<description>',
-            `${separator(lcEndTemplateTag)}`,
-            'Given the following git diff:',
-            `${separator(lcBeginGitDiffTag)}`,
-            aGitDiff,
-            `${separator(lcEndGitDiffTag)}`,
-            'Analyze the given git diff and make sure to:',
-            '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
-            '- If necessary, select a scope from files, directories, or topics: <scope>',
-            '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
-            '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
+      `${separator(lcBeginTemplateTag)}`,
+      '<type>(scope): <gitmoji> - <subject>',
+      '',
+      '<description>',
+      `${separator(lcEndTemplateTag)}`,
+      'Given the following git diff:',
+      `${separator(lcBeginGitDiffTag)}`,
+      aGitDiff,
+      `${separator(lcEndGitDiffTag)}`,
+      'Analyze the given git diff and make sure to:',
+      '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
+      '- If necessary, select a scope from files, directories, or topics: <scope>',
+      '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
+      '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
     ]
   }
 }
@@ -300,20 +300,21 @@ async function generateSingleCommit (aGitDiff) {
   const { text } = lMessage
   const lText = split90(text)
   console.log(
-        `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
   return lText
 }
 
 async function generateSingleCommitAll (aGitDiff) {
   const lPrompt = prompts.oks(aGitDiff).join('\n')
+  if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   console.log('Commit all get message ...')
   const lMessage = await gcApi.sendMessage(lPrompt)
   const { text } = lMessage
   const lText = split90(text)
   console.log(
-        `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
+    `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
   return lText
 }
@@ -329,7 +330,7 @@ function split90 (aText) {
         while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
         if (lSplitIndex > 90) {
           aPrevious.push(
-                        `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
+            `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
           )
         } else {
           aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
