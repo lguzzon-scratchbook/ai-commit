@@ -146,7 +146,7 @@ function separator (aText) {
 }
 
 if (gcArgs.r || gcArgs.release) {
-  commitRelease()
+  await commitRelease()
 } else {
   await generateAICommit()
 }
