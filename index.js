@@ -193,7 +193,7 @@ async function commitRelease () {
 }
 
 async function commitAllFiles () {
-  const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`).toString().trim()
+  const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`)
 
   // Handle empty diff
   if (!diff) {
