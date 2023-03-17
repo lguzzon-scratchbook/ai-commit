@@ -106,17 +106,21 @@ const prompts = {
     ]
   },
   v03_head: function (aGitDiff) {
+    const lcBeginTemplateTag = 'Begin-Template'
+    const lcEndTemplateTag = 'End-Template'
+    const lcBeginGitDiffTag = 'Begin-GitDiff'
+    const lcEndGitDiffTag = 'End-GitDiff'
     return [
       'Please provide a conventional commit message following this template:',
-      `${separator('Begin-Tem' + 'plate')}`,
+      `${separator(lcBeginTemplateTag)}`,
       '<type>(scope): <gitmoji> - <subject>',
       '',
       '<description>',
-      `${separator('End-Temp' + 'late')}`,
+      `${separator(lcEndTemplateTag)}`,
       'Given the following git diff:',
-      `${separator('Begin' + '-GitDiff')}`,
+      `${separator(lcBeginGitDiffTag)}`,
       aGitDiff,
-      `${separator('En' + 'd-GitDiff')}`,
+      `${separator(lcEndGitDiffTag)}`,
       'Analyze the given git diff and make sure to:',
       '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
       '- If necessary, select a scope from files, directories, or topics: <scope>',
@@ -162,7 +166,7 @@ async function commitRelease () {
     .toString()
     .trim()
   console.log('Release get summary ...')
-  const lPrompt = `Please provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commit text from the previous release. The commits text is as follows:\n${commitsText}`
+  const lPrompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
   const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim()
   console.log('Release Tag -> ', lNextTag, ' Msg => [', lMessage, ']')
   if (!gcArgs.force) {
