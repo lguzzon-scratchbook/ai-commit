@@ -189,7 +189,7 @@ async function commitRelease () {
       process.exit(1)
     }
   }
-  execSync(`bash -c "git gfr '${lNextTag}' '${lMessage}'; exit 0"`).toString().trim()
+  execSync(`git gfr "${lNextTag}" "${lMessage}"`)
 }
 
 async function commitAllFiles () {
