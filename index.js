@@ -14,6 +14,8 @@ dotenv.config()
 
 const gcArgs = getArgs()
 
+const gcVerbose = gcArgs.v || gcArgs.verbose
+
 const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
 if (!gcApiKey) {
   console.error('Please set the OPENAI_API_KEY environment variable.')
@@ -26,9 +28,9 @@ const gcApi = new ChatGPTAPI({
 
 const prompts = {
   ok: function (aGitDiff) {
-    return this.v02(aGitDiff)
+    return this[getOKProp('')](aGitDiff)
   },
-  oks: function (aGitDiff) { return this.v02s(aGitDiff) },
+  oks: function (aGitDiff) { return this[getOKProp('s')](aGitDiff) },
   v01: function (aGitDiff) {
     return [
       ...this.v01_head(aGitDiff),
@@ -53,7 +55,7 @@ const prompts = {
       aGitDiff,
       '',
       '',
-      'Analyze the arguments of the given git diff using a hierarchical table of contents (at least 3 levels) and make sure to:',
+      'Analyze the git diff and make sure to:',
       '- Select a type: <type>',
       '- If necessary, select a scope from files, directories, or topics: <scope>',
       '- Choose a gitmoji icon character  that corresponds to the <type> you selected: <gitmoji>',
@@ -84,13 +86,59 @@ const prompts = {
       aGitDiff,
       '',
       '',
-      'Analyze the arguments of the given git diff using a hierarchical table of contents (at least 3 levels) and make sure to:',
+      'Analyze the given git diff and make sure to:',
+      '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
+      '- If necessary, select a scope from files, directories, or topics: <scope>',
+      '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
+      '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
+    ]
+  },
+  v03: function (aGitDiff) {
+    return [
+      ...this.v03_head(aGitDiff),
+      '- Ensure, using bullet points, to list all changes, updates, additions, and deletions made in the git diff in detail and include nothing else: <description>'
+    ]
+  },
+  v03s: function (aGitDiff) {
+    return [
+      ...this.v03_head(aGitDiff),
+      '- Ensure that the description is a list with all changes, updates, additions, and deletions made for each file in the git diff in detail, using bullet points and nothing else!: <description>'
+    ]
+  },
+  v03_head: function (aGitDiff) {
+    return [
+      'Please provide a conventional commit message following this template:',
+      `${separator('Begin-Tem' + 'plate')}`,
+      '<type>(scope): <gitmoji> - <subject>',
+      '',
+      '<description>',
+      `${separator('End-Temp' + 'late')}`,
+      'Given the following git diff:',
+      `${separator('Begin' + '-GitDiff')}`,
+      aGitDiff,
+      `${separator('En' + 'd-GitDiff')}`,
+      'Analyze the given git diff and make sure to:',
       '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
       '- If necessary, select a scope from files, directories, or topics: <scope>',
       '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
       '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
     ]
   }
+}
+
+function getOKProp (aSuffix = '') {
+  let lResult = 'v03'
+  const lPromptProp = gcArgs.p || gcArgs.prompt
+  if (lPromptProp) {
+    lResult = lPromptProp
+  }
+  lResult += aSuffix
+  console.warn('Using prompt -> ', lResult)
+  return lResult
+}
+
+function separator (aText) {
+  return '-'.repeat(7) + aText + '-'.repeat(7)
 }
 
 if (gcArgs.r || gcArgs.release) { commitRelease() } else {
@@ -182,7 +230,7 @@ async function commitEachFile () {
 
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const lElement = stagedFiles[lIndex].trim()
-    console.log()
+    console.log('Processing file -> ', lElement)
     if (lElement) {
       const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
         .toString()
@@ -228,6 +276,7 @@ function makeCommit (aInput, aFilename) {
 
 async function generateSingleCommit (aGitDiff) {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
+  if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   const lMessage = await gcApi.sendMessage(lPrompt)
   const { text } = lMessage
