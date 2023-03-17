@@ -165,8 +165,8 @@ async function commitRelease () {
   const commitsText = execSync(`git log ${lLatestCommit}..HEAD --pretty=format:%s`)
     .toString()
     .trim()
-  console.log('Release get summary ...')
   const lPrompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
+  console.log('Release get summary ...')
   const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim()
   console.log('Release Tag -> ', lNextTag, ' Msg => [', lMessage, ']')
   if (!gcArgs.force) {
@@ -282,9 +282,9 @@ async function generateSingleCommit (aGitDiff) {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  console.log('Commit get message ...')
   const lMessage = await gcApi.sendMessage(lPrompt)
   const { text } = lMessage
-
   const lText = split90(text)
   console.log(
     `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
@@ -293,11 +293,11 @@ async function generateSingleCommit (aGitDiff) {
 }
 
 async function generateSingleCommitAll (aGitDiff) {
-  const prompt = prompts.oks(aGitDiff).join('\n')
-  if (!(await filterApi({ prompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
-  const lMessage = await gcApi.sendMessage(prompt)
+  const lPrompt = prompts.oks(aGitDiff).join('\n')
+  if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  console.log('Commit all get message ...')
+  const lMessage = await gcApi.sendMessage(lPrompt)
   const { text } = lMessage
-
   const lText = split90(text)
   console.log(
     `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
