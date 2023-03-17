@@ -1,28 +1,28 @@
 import { execSync } from 'child_process'
 
 const getArgs = () => {
-  const args = process.argv.slice(2)
-  const result = {}
+  const lcArgs = process.argv.slice(2)
+  const lcResult = {}
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    const key = arg.replace(/^--/, '')
-    const nextArg = args[i + 1]
-    if (/^--/.test(nextArg) || nextArg === undefined) {
-      result[key] = true
+  for (let lIndex = 0; lIndex < lcArgs.length; lIndex++) {
+    const lArg = lcArgs[lIndex]
+    const lKey = lArg.replace(/^--/, '')
+    const lNextArg = lcArgs[lIndex + 1]
+    if (/^--/.test(lNextArg) || lNextArg === undefined) {
+      lcResult[lKey] = true
     } else {
-      result[key] = nextArg
-      i++
+      lcResult[lKey] = lNextArg
+      lIndex++
     }
   }
 
-  return result
+  return lcResult
 }
 
 const checkGitRepository = () => {
   try {
-    const output = execSync('git rev-parse --is-inside-work-tree', { encoding: 'utf-8' })
-    return output.trim() === 'true'
+    const lOutput = execSync('git rev-parse --is-inside-work-tree', { encoding: 'utf-8' })
+    return lOutput.trim() === 'true'
   } catch (err) {
     return false
   }
