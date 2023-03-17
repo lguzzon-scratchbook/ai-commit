@@ -7,17 +7,17 @@ const MAX_TOKENS = 4000
 const FEE_COMPLETION = 0.001
 
 async function filterApi ({ prompt, numCompletion = 1, filterFee }) {
-  const numTokens = encode(prompt).length
-  const fee = numTokens / 1000 * FEE_PER_1K_TOKENS + (FEE_COMPLETION * numCompletion)
+  const lcNumTokens = encode(prompt).length
+  const lcFee = lcNumTokens / 1000 * FEE_PER_1K_TOKENS + (FEE_COMPLETION * numCompletion)
 
-  if (numTokens > MAX_TOKENS) {
+  if (lcNumTokens > MAX_TOKENS) {
     console.log('The commit diff is too large for the ChatGPT API. Max 4k tokens or ~8k characters. ')
     return false
   }
 
   if (filterFee) {
-    console.log(`This will cost you ~$${+fee.toFixed(3)} for using the API.`)
-    const answer = await inquirer.prompt([
+    console.log(`This will cost you ~$${+lcFee.toFixed(3)} for using the API.`)
+    const lcAnswer = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'continue',
@@ -25,7 +25,7 @@ async function filterApi ({ prompt, numCompletion = 1, filterFee }) {
         default: true
       }
     ])
-    if (!answer.continue) return false
+    if (!lcAnswer.continue) return false
   }
 
   return true
