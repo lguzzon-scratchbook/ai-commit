@@ -17,7 +17,10 @@ if (!gcApiKey) {
   process.exit(1)
 }
 const gcApi = new ChatGPTAPI({
-  apiKey: gcApiKey
+  apiKey: gcApiKey,
+  completionParams: {
+    top_p: 0.2
+  }
 })
 
 const prompts = {
@@ -125,11 +128,13 @@ const prompts = {
 }
 
 export async function main () {
+  if (gcVerbose) { console.info('ai-commit begin') }
   if (gcArgs.r || gcArgs.release) {
     await commitRelease()
   } else {
     await generateAICommit()
   }
+  if (gcVerbose) { console.info('ai-commit end') }
 }
 
 function getOKProp (aSuffix = '') {
