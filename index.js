@@ -190,6 +190,7 @@ async function commitRelease () {
     }
   }
   execSync(`git gfr "${lNextTag}" "${lMessage}" >/dev/null 2>&1`)
+  console.log('Release done!!!')
 }
 
 async function commitAllFiles () {
