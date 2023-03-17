@@ -162,6 +162,10 @@ async function commitRelease () {
   const lLatestCommit = execSync(`git log ${latestTag}..HEAD --pretty=format:%H | tail -1`)
     .toString()
     .trim()
+  if (!lLatestCommit) {
+    console.log('No latest commit present ...')
+    return
+  }
   const commitsText = execSync(`git log ${lLatestCommit}..HEAD --pretty=format:%s`)
     .toString()
     .trim()
