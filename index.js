@@ -189,14 +189,14 @@ async function commitRelease () {
       process.exit(1)
     }
   }
-  execSync(`./gfr.sh "${lNextTag}" "${lMessage}"  >/dev/null 2>&1`)
+  execSync(`git gfr "${lNextTag}" "${lMessage}" >/dev/null 2>&1`)
 }
 
 async function commitAllFiles () {
-  const diff = execSync(`git diff -U${getGitDiffUnified()} --staged`)
+  const lDiff = execSync(`git diff -U${getGitDiffUnified()} --staged`)
 
   // Handle empty diff
-  if (!diff) {
+  if (!lDiff) {
     console.log('No changes to commit 🙅')
     console.log(
       'May be you forgot to add the files? Try git add . and then run this script again.'
@@ -204,7 +204,7 @@ async function commitAllFiles () {
     process.exit(1)
   }
 
-  const lText = await generateSingleCommitAll(diff)
+  const lText = await generateSingleCommitAll(lDiff)
 
   if (gcArgs.force) {
     makeCommit(lText, '.')
@@ -233,47 +233,58 @@ function getGitDiffUnified () {
 }
 
 async function commitEachFile () {
-  const stagedFiles = execSync('git diff --cached --name-only')
+  const stagedFiles = execSync('git diff --cached --name-status')
     .toString()
     .trim()
     .split('\n')
 
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
-    const lElement = stagedFiles[lIndex].trim()
+    const [lStatus, lElement] = stagedFiles[lIndex].trim().split('\t')
+    console.log('🚀 ~ file: index.js:243 ~ commitEachFile ~ lStatus:', lStatus)
+
     console.log('Processing file -> ', lElement)
     if (lElement) {
-      const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
-        .toString()
-        .trim()
+      switch (lStatus.trim().toUpperCase()) {
+        case 'D':
+          makeCommit(`chore(${lElement}): 🔧 - File deleted`, lElement)
+          break
 
-      // Handle empty diff
-      if (!diff) {
-        console.log('No changes to commit 🙅')
-        console.log(
-          'May be you forgot to add the files? Try git add . and then run this script again.'
-        )
-        process.exit(1)
-      }
+        default: {
+          const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
+            .toString()
+            .trim()
 
-      const lText = await generateSingleCommit(diff)
-
-      if (!gcArgs.force) {
-        const answer = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'continue',
-            message: 'Do you want to continue?',
-            default: true
+          // Handle empty diff
+          if (!diff) {
+            console.log('No changes to commit 🙅')
+            console.log(
+              'May be you forgot to add the files? Try git add . and then run this script again.'
+            )
+            process.exit(1)
           }
-        ])
 
-        if (!answer.continue) {
-          console.log('Commit aborted by user 🙅‍♂️')
-          process.exit(1)
+          const lText = await generateSingleCommit(diff)
+
+          if (!gcArgs.force) {
+            const answer = await inquirer.prompt([
+              {
+                type: 'confirm',
+                name: 'continue',
+                message: 'Do you want to continue?',
+                default: true
+              }
+            ])
+
+            if (!answer.continue) {
+              console.log('Commit aborted by user 🙅‍♂️')
+              process.exit(1)
+            }
+          }
+
+          makeCommit(lText, lElement)
         }
+          break
       }
-
-      makeCommit(lText, lElement)
     }
   }
 }
