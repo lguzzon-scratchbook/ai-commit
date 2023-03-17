@@ -145,7 +145,9 @@ function separator (aText) {
   return '-'.repeat(7) + aText + '-'.repeat(7)
 }
 
-if (gcArgs.r || gcArgs.release) { commitRelease() } else {
+if (gcArgs.r || gcArgs.release) {
+  commitRelease()
+} else {
   await generateAICommit()
 }
 
