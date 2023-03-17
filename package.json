@@ -6,8 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "check": "npx -y standard . --fix && git add . && node index",
-    "check:all": "npx -y standard . --fix && git add . && node index -- --all",
+    "check": "npx -y standard . --fix && git add . && ./index.js",
+    "check:all": "npx -y standard . --fix && git add . && ./index.js --all",
     "publish:major": "npm version major && npm publish --access public"
   },
   "bin": {
