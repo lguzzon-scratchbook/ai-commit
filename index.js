@@ -96,13 +96,13 @@ const prompts = {
   v03: function (aGitDiff) {
     return [
       ...this.v03_head(aGitDiff),
-      '- List all changes, updates, additions, and deletions made in the git diff in detail using bullet points in the description and include nothing else!: <description>'
+      '- Ensure, using bullet points, to list all changes, updates, additions, and deletions made in the git diff in detail and include nothing else: <description>'
     ]
   },
   v03s: function (aGitDiff) {
     return [
       ...this.v03_head(aGitDiff),
-      '- Ensure, using bullet points, to list all changes, updates, additions, and deletions made in the git diff in detail and include nothing else: <description>'
+      '- Ensure that the description is a list with all changes, updates, additions, and deletions made for each file in the git diff in detail, using bullet points and nothing else!: <description>'
     ]
   },
   v03_head: function (aGitDiff) {
@@ -127,7 +127,7 @@ const prompts = {
 }
 
 function getOKProp (aSuffix = '') {
-  let lResult = 'v02'
+  let lResult = 'v03'
   const lPromptProp = gcArgs.p || gcArgs.prompt
   if (lPromptProp) {
     lResult = lPromptProp
