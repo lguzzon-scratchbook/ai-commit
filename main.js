@@ -238,7 +238,7 @@ async function commitEachFile () {
   for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
     const [lStatus, lElement] = stagedFiles[lIndex].trim().split('\t')
 
-    console.log('Processing file -> ', lElement)
+    console.log('\nProcessing file -> ', lElement)
     if (lElement) {
       switch (lStatus.trim().toUpperCase()) {
         case 'D':
