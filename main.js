@@ -279,40 +279,43 @@ async function commitEachFile () {
           makeCommit(`chore(${lElement}): 🔧 - File deleted`, lElement)
           break
 
-        default: {
-          const diff = execSync(`git diff -U${getGitDiffUnified()} --staged "${lElement}"`)
-            .toString()
-            .trim()
-
-          // Handle empty diff
-          if (!diff) {
-            console.log('No changes to commit 🙅')
-            console.log(
-              'May be you forgot to add the files? Try git add . and then run this script again.'
+        default:
+          {
+            const diff = execSync(
+              `git diff -U${getGitDiffUnified()} --staged "${lElement}"`
             )
-            process.exit(1)
-          }
+              .toString()
+              .trim()
 
-          const lText = await generateSingleCommit(diff)
-
-          if (!gcArgs.force) {
-            const answer = await inquirer.prompt([
-              {
-                type: 'confirm',
-                name: 'continue',
-                message: 'Do you want to continue?',
-                default: true
-              }
-            ])
-
-            if (!answer.continue) {
-              console.log('Commit aborted by user 🙅‍♂️')
+            // Handle empty diff
+            if (!diff) {
+              console.log('No changes to commit 🙅')
+              console.log(
+                'May be you forgot to add the files? Try git add . and then run this script again.'
+              )
               process.exit(1)
             }
-          }
 
-          makeCommit(lText, lElement)
-        }
+            const lText = await generateSingleCommit(diff)
+
+            if (!gcArgs.force) {
+              const answer = await inquirer.prompt([
+                {
+                  type: 'confirm',
+                  name: 'continue',
+                  message: 'Do you want to continue?',
+                  default: true
+                }
+              ])
+
+              if (!answer.continue) {
+                console.log('Commit aborted by user 🙅‍♂️')
+                process.exit(1)
+              }
+            }
+
+            makeCommit(lText, lElement)
+          }
           break
       }
     }
