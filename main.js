@@ -118,11 +118,40 @@ const prompts = {
       `${separator(lcBeginGitDiffTag)}`,
       aGitDiff,
       `${separator(lcEndGitDiffTag)}`,
+      'Remember that the goal of a commit message is to provide a clear and concise summary of the changes made, which will be helpful for future developers who are working on the project.',
       'Analyze the given git diff and make sure to:',
       '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
       '- If necessary, select a scope from files, directories, or topics: <scope>',
       '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
       '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
+    ]
+  },
+  v04: function (aGitDiff) {
+    const lcBeginGitDiffTag = 'Begin-GitDiff'
+    const lcEndGitDiffTag = 'End-GitDiff'
+    return [
+      "I want you to act as a Git commit message generator based on a Git Diff text.Given the changes made in the Git Diff, your task is to generate a concise and informative commit message following the conventional commit standard.Here's a template you can use to guide your message:",
+      "'''Template",
+      'Copy code',
+      'type(scope): icon subject',
+      '',
+      'body',
+      "'''",
+      'Given Git diff:',
+      `${separator(lcBeginGitDiffTag)}`,
+      aGitDiff,
+      `${separator(lcEndGitDiffTag)}`,
+      'Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore.',
+      'If necessary, select a scope from files, directories, or topics in Git Diff and body.',
+      'Identify the icon using the proper gitmoji from the changes made in the Git Diff.',
+      'The subject should be a brief summary of the commit message that accurately describes the changes made.',
+      'In the body of the message, provide a detailed bullet list of all the changes, updates, additions, and deletions that were made.The body should not contain any further explanations or details beyond the changes themselves.',
+      'Remember that the goal of a commit message is to provide a clear and concise summary of the changes made, which will be helpful for future developers who are working on the project.'
+    ]
+  },
+  v04s: function (aGitDiff) {
+    return [
+      ...this.v03(aGitDiff)
     ]
   }
 }
