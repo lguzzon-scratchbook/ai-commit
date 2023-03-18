@@ -4,3 +4,4 @@
 import { main } from './main.js'
 
 await main()
+process.exit(0)
