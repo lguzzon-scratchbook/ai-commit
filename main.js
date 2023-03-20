@@ -23,6 +23,7 @@ const gcCompletionParams = {
   temperature: 0,
   top_p: 0.2
 }
+
 const gcApi = gcApiToken
   ? new ChatGPTUnofficialProxyAPI({
     accessToken: process.env.OPENAI_ACCESS_TOKEN,
@@ -32,6 +33,12 @@ const gcApi = gcApiToken
     apiKey: gcApiKey,
     completionParams: gcCompletionParams
   })
+
+if (gcApiToken) {
+  console.log('Using: ApiToken')
+} else {
+  console.log('Using: ApiKey')
+}
 
 const prompts = {
   ok: function (aGitDiff) {
