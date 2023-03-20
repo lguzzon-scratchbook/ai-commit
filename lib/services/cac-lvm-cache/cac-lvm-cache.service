@@ -1,0 +1,14 @@
+[Unit]
+Description=Enable LVM Cache RamDisk on CAC VPS
+After=local-fs.target
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+ExecStart=/usr/sbin/cac-lvm-cache-start.sh
+ExecStop=/usr/sbin/cac-lvm-cache-stop.sh
+Type=oneshot
+RemainAfterExit=yes
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target

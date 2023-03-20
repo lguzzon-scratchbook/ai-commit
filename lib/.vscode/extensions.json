@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "foxundermoon.shell-format",
+        "mads-hartmann.bash-ide-vscode",
+        "ms-vscode.sublime-keybindings"
+        "remisa.shellman",
+        "rogalmic.bash-debug",
+        "rpinski.shebang-snippets",
+        "timonwong.shellcheck",
+    ]
+}
