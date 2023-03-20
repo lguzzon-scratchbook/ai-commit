@@ -19,6 +19,7 @@ if (!gcApiKey) {
 const gcApi = new ChatGPTAPI({
   apiKey: gcApiKey,
   completionParams: {
+    temperature: 0,
     top_p: 0.2
   }
 })
