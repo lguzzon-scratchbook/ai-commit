@@ -1,7 +1,7 @@
 'use strict'
 
 import { execSync } from 'child_process'
-import { ChatGPTAPI } from 'chatgpt'
+import { ChatGPTAPI, ChatGPTUnofficialProxyAPI } from 'chatgpt'
 import inquirer from 'inquirer'
 import { getArgs, checkGitRepository } from './helpers.js'
 import { filterApi } from './filterApi.js'
@@ -12,17 +12,26 @@ dotenv.config()
 const gcArgs = getArgs()
 const gcVerbose = gcArgs.v || gcArgs.verbose
 const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
-if (!gcApiKey) {
-  console.error('Please set the OPENAI_API_KEY environment variable.')
+const gcApiToken = process.env.OPENAI_ACCESS_TOKEN
+
+if (!gcApiKey && !gcApiToken) {
+  console.error('Please set the OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable.')
   process.exit(1)
 }
-const gcApi = new ChatGPTAPI({
-  apiKey: gcApiKey,
-  completionParams: {
-    temperature: 0,
-    top_p: 0.2
-  }
-})
+
+const gcCompletionParams = {
+  temperature: 0,
+  top_p: 0.2
+}
+const gcApi = gcApiToken
+  ? new ChatGPTUnofficialProxyAPI({
+    accessToken: process.env.OPENAI_ACCESS_TOKEN,
+    completionParams: gcCompletionParams
+  })
+  : new ChatGPTAPI({
+    apiKey: gcApiKey,
+    completionParams: gcCompletionParams
+  })
 
 const prompts = {
   ok: function (aGitDiff) {
