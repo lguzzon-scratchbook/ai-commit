@@ -83,6 +83,32 @@ const prompts = {
   }
 }
 
+async function pizzaGPT (aMessage) {
+  const lcResponse = await fetch('https://www.pizzagpt.it/api/chat-completion', {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      question: aMessage
+    })
+  })
+  const lcJson = await lcResponse.json()
+  if (lcJson.description === 'ok') {
+    return lcJson.answer.content
+  } else { return '' }
+}
+
+async function mySendMessage (aMessage) {
+  const lcResult = await pizzaGPT(aMessage)
+  if (lcResult !== '') {
+    return { text: lcResult }
+  } else {
+    return gcApi.sendMessage(aMessage)
+  }
+}
+
 export async function main () {
   if (gcVerbose) { console.info('ai-commit begin') }
   if (gcArgs.r || gcArgs.release) {
@@ -130,7 +156,7 @@ async function commitRelease () {
     .trim()
   const lPrompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
   console.log('Release get summary ...')
-  const lMessage = (await gcApi.sendMessage(lPrompt)).text.trim().replaceAll('"', '')
+  const lMessage = (await mySendMessage(lPrompt)).text.trim().replaceAll('"', '')
   console.log('Release Tag -> ', lNextTag, ' Msg => [', lMessage, ']')
   if (!gcArgs.force) {
     const answer = await inquirer.prompt([
@@ -260,7 +286,7 @@ async function generateSingleCommit (aGitDiff) {
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   console.log('Commit get message ...')
-  const lMessage = await gcApi.sendMessage(lPrompt)
+  const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
   const lText = split90(text)
   console.log(
@@ -274,7 +300,7 @@ async function generateSingleCommitAll (aGitDiff) {
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
   console.log('Commit all get message ...')
-  const lMessage = await gcApi.sendMessage(lPrompt)
+  const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
   const lText = split90(text)
   console.log(

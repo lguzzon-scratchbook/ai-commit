@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "check": "npx -y standard . --fix && git add . && ./index.js",
     "check:all": "npx -y standard . --fix && git add . && ./index.js --all",
+    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && ./index.js --r",
     "publish:major": "npm version major && npm publish --access public"
   },
   "bin": {
