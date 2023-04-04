@@ -11,6 +11,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 const gcArgs = getArgs()
 const gcVerbose = gcArgs.v || gcArgs.verbose
+// const gcDebug = gcArgs.d || gcArgs.debug
 const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
 const gcApiToken = process.env.OPENAI_ACCESS_TOKEN
 
@@ -83,30 +84,8 @@ const prompts = {
   }
 }
 
-async function pizzaGPT (aMessage) {
-  const lcResponse = await fetch('https://www.pizzagpt.it/api/chat-completion', {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      question: aMessage
-    })
-  })
-  const lcJson = await lcResponse.json()
-  if (lcJson.description === 'ok') {
-    return lcJson.answer.content
-  } else { return '' }
-}
-
 async function mySendMessage (aMessage) {
-  const lcResult = await pizzaGPT(aMessage)
-  if (lcResult !== '') {
-    return { text: lcResult }
-  } else {
-    return gcApi.sendMessage(aMessage)
-  }
+  return gcApi.sendMessage(aMessage)
 }
 
 export async function main () {
