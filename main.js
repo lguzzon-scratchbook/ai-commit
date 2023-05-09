@@ -98,20 +98,16 @@ export async function main () {
   if (gcVerbose) { console.info('ai-commit end') }
 }
 
-function getOKProp (aSuffix = '') {
-  let lResult = 'v03'
-  const lPromptProp = gcArgs.p || gcArgs.prompt
-  if (lPromptProp) {
-    lResult = lPromptProp
-  }
-  lResult += aSuffix
-  console.warn('Using prompt -> ', lResult)
-  return lResult
+function getProperty(suffix = "") {
+  const lReturn = (gcArgs.p || gcArgs.prompt || "v03") + suffix
+  console.warn("Using prompt -> ", lReturn)
+  return lReturn
 }
 
-function separator (aText) {
-  return '-'.repeat(7) + aText + '-'.repeat(7)
+function separator(aText) {
+  return `${"-".repeat(7)}${aText}${"-".repeat(7)}`;
 }
+
 
 async function commitRelease () {
   let latestTag = null
