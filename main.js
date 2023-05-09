@@ -99,16 +99,15 @@ export async function main () {
   return Promise.resolve()
 }
 
-function getProperty(suffix = "") {
-  const lReturn = (gcArgs.p || gcArgs.prompt || "v03") + suffix
-  console.warn("Using prompt -> ", lReturn)
+function getOKProp (suffix = '') {
+  const lReturn = (gcArgs.p || gcArgs.prompt || 'v03') + suffix
+  console.warn('Using prompt -> ', lReturn)
   return lReturn
 }
 
-function separator(aText) {
-  return `${"-".repeat(7)}${aText}${"-".repeat(7)}`;
+function separator (aText) {
+  return `${'-'.repeat(7)}${aText}${'-'.repeat(7)}`
 }
-
 
 async function commitRelease () {
   let latestTag = null
