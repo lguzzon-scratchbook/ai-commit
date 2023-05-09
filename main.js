@@ -96,6 +96,7 @@ export async function main () {
     await generateAICommit()
   }
   if (gcVerbose) { console.info('ai-commit end') }
+  return Promise.resolve()
 }
 
 function getProperty(suffix = "") {
