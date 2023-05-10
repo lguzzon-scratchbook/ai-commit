@@ -575,11 +575,15 @@ git_i() {
 }
 
 haxe_i() {
+  sAPPS_PATH
+  local -r HAXELIB_PATH="${APPS_PATH}/haxelib"
   sudo add-apt-repository ppa:haxe/releases -y \
     && sudo apt-get update \
     && sudo apt-get install haxe -y \
-    && mkdir ~/haxelib \
-    && haxelib setup ~/haxelib
+    && ([ -d "${HAXELIB_PATH}" ] || mkdir "${HAXELIB_PATH}") \
+    && haxelib setup "${HAXELIB_PATH}" \
+    && haxelib --global update haxelib \
+    && haxelib --global update
   return $?
 }
 
