@@ -105,7 +105,11 @@ git config --global --replace-all alias.tls 'tag -n --sort=-taggerdate'
 # git local work flow Work In Progress
 git config --global --replace-all alias.wip '!g(){ git commit -a -m "chore(dev): work in progress"; }; f(){ ( [ $(git tag -l wip) ] && ( g || true ) ) || ( g && git tag wip ); }; f'
 git config --global --replace-all alias.piw '!f(){ git wip && (git reset --soft wip^ || git reset --soft wip) && git tag -d wip && git commit --edit -m "$(git log --format=%B --reverse HEAD..HEAD@{1})"; }; f'
+
 git config --global --replace-all alias.gcall '!git reflog expire --expire=now --all && git gc --aggressive --prune=now'
+
+# https://twitter.com/KrasimirTsonev/status/1653784671400910848
+git config --global --replace-all alias.bwo '!git brs --sort=-committerdate'
 
 # See also
 #   https://github.com/nvie/git-toolbelt

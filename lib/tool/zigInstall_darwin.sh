@@ -81,8 +81,8 @@ architectureOs() {
   uname -m
 }
 
-uppercase(){
-    echo "$@" | awk '{print toupper($0)}'
+uppercase() {
+  echo "$@" | awk '{print toupper($0)}'
 }
 
 zig_i_darwin() {

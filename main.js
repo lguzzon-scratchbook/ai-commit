@@ -112,7 +112,7 @@ function separator (aText) {
 async function commitRelease () {
   let latestTag = null
   try {
-    latestTag = semver.clean(execSync('git describe --tags --abbrev=0 HEAD^')
+    latestTag = semver.clean(execSync('git describe --tags --abbrev=0')
       .toString()
       .trim())
   } catch (error) {
