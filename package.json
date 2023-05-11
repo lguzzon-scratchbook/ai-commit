@@ -33,10 +33,10 @@
   },
   "homepage": "https://github.com/insulineru/ai-commit#readme",
   "dependencies": {
-    "chatgpt": "^5.1.1",
+    "chatgpt": "^5.2.4",
     "dotenv": "^16.0.3",
     "gpt-3-encoder": "^1.1.4",
-    "inquirer": "^9.1.4"
+    "inquirer": "^9.2.2"
   },
   "devDependencies": {
     "standard": "^17.0.0"
