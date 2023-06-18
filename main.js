@@ -3,13 +3,13 @@
 import { execSync } from 'child_process'
 import { ChatGPTAPI, ChatGPTUnofficialProxyAPI } from 'chatgpt'
 import inquirer from 'inquirer'
-import { getArgs, checkGitRepository } from './helpers.js'
+import { getArguments, isInsideGitRepository } from './helpers.js'
 import { filterApi } from './filterApi.js'
 import semver from 'semver'
 import * as dotenv from 'dotenv'
 
 dotenv.config()
-const gcArgs = getArgs()
+const gcArgs = getArguments()
 const gcVerbose = gcArgs.v || gcArgs.verbose
 // const gcDebug = gcArgs.d || gcArgs.debug
 const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
@@ -89,13 +89,19 @@ async function mySendMessage (aMessage) {
 }
 
 export async function main () {
-  if (gcVerbose) { console.info('ai-commit begin') }
-  if (gcArgs.r || gcArgs.release) {
+  const isVerbose = gcVerbose
+  const isRelease = gcArgs.r || gcArgs.release
+
+  if (isVerbose) console.info('ai-commit begin')
+
+  if (isRelease) {
     await commitRelease()
   } else {
     await generateAICommit()
   }
-  if (gcVerbose) { console.info('ai-commit end') }
+
+  if (isVerbose) console.info('ai-commit end')
+
   return Promise.resolve()
 }
 
@@ -110,31 +116,60 @@ function separator (aText) {
 }
 
 async function commitRelease () {
-  let latestTag = null
-  try {
-    latestTag = semver.clean(execSync('git describe --tags --abbrev=0')
-      .toString()
-      .trim())
-  } catch (error) {
-    latestTag = null
-  }
-  const lNextTag = latestTag ? semver.inc(latestTag, 'patch') : '0.0.0'
-  const lLatestCommit = execSync(`git log ${latestTag}..HEAD --pretty=format:%H | tail -1`)
-    .toString()
-    .trim()
-  if (!lLatestCommit) {
-    console.log('No latest commit present ...')
+  // Get the latest tag and latest commit hash
+  const latestTag = getLatestTag()
+  const latestCommit = getLatestCommit(latestTag)
+
+  // If there are no new commits, exit
+  if (!latestCommit) {
+    console.log('No new commits since last release')
     return
   }
-  const commitsText = execSync(`git log ${lLatestCommit}..HEAD --pretty=format:%s`)
+
+  // Get commit messages and prompt user for release summary
+  const commitsText = getCommitsText(latestCommit)
+  const prompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
+  const message = await promptUser(prompt)
+
+  // Create new tag and release
+  const nextTag = getNextTag(latestTag)
+  await createRelease(nextTag, message)
+  console.log('Release done!!!')
+}
+
+function getLatestTag () {
+  try {
+    return semver.clean(
+      execSync('git describe --tags --abbrev=0').toString().trim()
+    )
+  } catch (error) {
+    return null
+  }
+}
+
+function getLatestCommit (tag) {
+  return execSync(`git log ${tag ? tag + '..' : ''}HEAD --pretty=format:%H | tail -1`)
     .toString()
     .trim()
-  const lPrompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
-  console.log('Release get summary ...')
-  const lMessage = (await mySendMessage(lPrompt)).text.trim().replaceAll('"', '')
-  console.log('Release Tag -> ', lNextTag, ' Msg => [', lMessage, ']')
+}
+
+function getCommitsText (since) {
+  return execSync(`git log ${since}..HEAD --pretty=format:%s`).toString().trim()
+}
+
+async function promptUser (prompt) {
+  console.log('Getting release summary ...')
+  const { text } = await mySendMessage(prompt)
+  return text.trim().replaceAll('"', '')
+}
+
+function getNextTag (tag) {
+  return tag ? semver.inc(tag, 'patch') : '0.0.0'
+}
+
+async function createRelease (tag, message) {
   if (!gcArgs.force) {
-    const answer = await inquirer.prompt([
+    const { continue: shouldContinue } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'continue',
@@ -142,75 +177,79 @@ async function commitRelease () {
         default: true
       }
     ])
-    if (!answer.continue) {
+    if (!shouldContinue) {
       console.log('Commit aborted by user 🙅‍♂️')
       process.exit(1)
     }
   }
-  execSync(`git gfr "${lNextTag}" "${lMessage}" >/dev/null 2>&1`)
-  console.log('Release done!!!')
+  execSync(`git gfr "${tag}" "${message}" >/dev/null 2>&1`)
 }
 
 async function commitAllFiles () {
-  const lDiff = execSync(`git diff -U${getGitDiffUnified()} --staged`)
+  const diffCommand = `git diff -U${getGitDiffUnified()} --staged`
+  const diff = execSync(diffCommand)
 
-  // Handle empty diff
-  if (!lDiff) {
-    console.log('No changes to commit 🙅')
-    console.log(
-      'May be you forgot to add the files? Try git add . and then run this script again.'
-    )
+  if (!diff) {
+    console.log('No changes to commit')
+    console.log('Try adding files with "git add ." and running this script again')
     process.exit(1)
   }
 
-  const lText = await generateSingleCommitAll(lDiff)
+  const commitMessage = await generateSingleCommitAll(diff)
 
   if (gcArgs.force) {
-    makeCommit(lText, '.')
+    makeCommit(commitMessage, '.')
     return
   }
 
-  const answer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'continue',
-      message: 'Do you want to continue?',
-      default: true
-    }
-  ])
+  const answer = await inquirer.prompt({
+    type: 'confirm',
+    name: 'continue',
+    message: 'Do you want to continue?',
+    default: true
+  })
 
   if (!answer.continue) {
-    console.log('Commit aborted by user 🙅‍♂️')
+    console.log('Commit aborted by user')
     process.exit(1)
   }
 
-  makeCommit(lText, '.')
+  makeCommit(commitMessage, '.')
 }
 
+// Returns the number of unified diff lines to show in git.
 function getGitDiffUnified () {
-  return gcArgs.u || gcArgs.unified || 1
+  const unifiedArg = gcArgs.u || gcArgs.unified || 1
+  return unifiedArg
 }
 
 async function commitEachFile () {
+  // Get list of staged files with their status
   const stagedFiles = execSync('git diff --cached --name-status')
     .toString()
     .trim()
     .split('\n')
 
-  for (let lIndex = 0; lIndex < stagedFiles.length; lIndex++) {
-    const [lStatus, lElement] = stagedFiles[lIndex].trim().split('\t')
+  // Loop through each staged file
+  for (let i = 0; i < stagedFiles.length; i++) {
+    const [status, file] = stagedFiles[i].trim().split('\t')
 
-    console.log('\nProcessing file -> ', lElement)
-    if (lElement) {
-      switch (lStatus.trim().toUpperCase()) {
+    // Print file being processed
+    console.log('\nProcessing file ->', file)
+
+    // Check if file exists
+    if (file) {
+      switch (status.trim().toUpperCase()) {
         case 'D':
-          makeCommit(`chore(${lElement}): 🔧 - File deleted`, lElement)
+          // Create commit for deleted file
+          makeCommit(`chore(${file}): 🔧 - File deleted`, file)
           break
 
         default:
           {
+            // Get diff for staged file
             const diff = execSync(
-              `git diff -U${getGitDiffUnified()} --staged "${lElement}"`
+              `git diff -U${getGitDiffUnified()} --staged "${file}"`
             )
               .toString()
               .trim()
@@ -224,8 +263,10 @@ async function commitEachFile () {
               process.exit(1)
             }
 
-            const lText = await generateSingleCommit(diff)
+            // Generate commit message for file changes
+            const commitMessage = await generateSingleCommit(diff)
 
+            // Confirm commit creation if not forced
             if (!gcArgs.force) {
               const answer = await inquirer.prompt([
                 {
@@ -242,7 +283,8 @@ async function commitEachFile () {
               }
             }
 
-            makeCommit(lText, lElement)
+            // Create commit for file changes
+            makeCommit(commitMessage, file)
           }
           break
       }
@@ -287,31 +329,28 @@ async function generateSingleCommitAll (aGitDiff) {
 function split90 (aText) {
   return aText
     .split('\n')
-    .reduce((aPrevious, aCurrent) => {
-      const lCurrent = aCurrent.trim()
-      let lSplitIndexStart = 0
-      let lSplitIndex = 90
-      while (lCurrent.length >= lSplitIndex) {
-        while (lCurrent[lSplitIndex] !== ' ') { lSplitIndex -= 1 }
-        if (lSplitIndex > 90) {
-          aPrevious.push(
-            `  ${lCurrent.substring(lSplitIndexStart, lSplitIndex)}`
-          )
+    .map((line) => {
+      const words = line.trim().split(' ')
+      const result = []
+      for (let i = 0; i < words.length; i++) {
+        if (result.length === 0) {
+          result.push(words[i])
         } else {
-          aPrevious.push(lCurrent.substring(lSplitIndexStart, lSplitIndex))
+          const last = result[result.length - 1]
+          if ((last + ' ' + words[i]).length > 90) {
+            result.push(words[i])
+          } else {
+            result[result.length - 1] = last + ' ' + words[i]
+          }
         }
-        lSplitIndexStart = lSplitIndex
-        lSplitIndex += 90
       }
-      if (lSplitIndex > 90) {
-        aPrevious.push(`  ${lCurrent.substring(lSplitIndexStart)}`)
-      } else { aPrevious.push(lCurrent) }
-      return aPrevious
-    }, []).join('\n')
+      return result.join('\n  ')
+    })
+    .join('\n')
 }
 
 async function generateAICommit () {
-  const isGitRepository = checkGitRepository()
+  const isGitRepository = isInsideGitRepository()
 
   if (!isGitRepository) {
     console.error('This is not a git repository 🙅‍♂️')
