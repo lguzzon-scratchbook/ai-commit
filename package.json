@@ -1,23 +1,22 @@
 {
-  "name": "ai-commit",
-  "version": "2.1.1",
-  "type": "module",
-  "description": "✨ Make Github commits easier with ChatGPT, Gitmoji and Conventional Commits 🚀",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "check": "npx -y standard . --fix && git add . && ./index.js",
-    "check:all": "npx -y standard . --fix && git add . && ./index.js --all",
-    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && ./index.js --r",
-    "publish:major": "npm version major && npm publish --access public"
-  },
+  "author": "Insuline.ru <insuline.ru@gmail.com>",
   "bin": {
     "ai-commit": "./index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/insulineru/ai-commit.git"
+  "bugs": {
+    "url": "https://github.com/insulineru/ai-commit/issues"
   },
+  "dependencies": {
+    "chatgpt": "^5.2.5",
+    "dotenv": "^16.3.1",
+    "gpt-3-encoder": "^1.1.4",
+    "inquirer": "^9.2.7"
+  },
+  "description": "✨ Make Github commits easier with ChatGPT, Gitmoji and Conventional Commits 🚀",
+  "devDependencies": {
+    "standard": "^17.1.0"
+  },
+  "homepage": "https://github.com/insulineru/ai-commit#readme",
   "keywords": [
     "ai",
     "chatgpt",
@@ -26,19 +25,20 @@
     "conventional",
     "commits"
   ],
-  "author": "Insuline.ru <insuline.ru@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/insulineru/ai-commit/issues"
+  "main": "index.js",
+  "name": "ai-commit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/insulineru/ai-commit.git"
   },
-  "homepage": "https://github.com/insulineru/ai-commit#readme",
-  "dependencies": {
-    "chatgpt": "^5.2.4",
-    "dotenv": "^16.0.3",
-    "gpt-3-encoder": "^1.1.4",
-    "inquirer": "^9.2.2"
+  "scripts": {
+    "check": "npx -y standard . --fix && git add . && ./index.js",
+    "check:all": "npx -y standard . --fix && git add . && ./index.js --all",
+    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && ./index.js --r",
+    "publish:major": "npm version major && npm publish --access public",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {
-    "standard": "^17.0.0"
-  }
+  "type": "module",
+  "version": "2.1.1"
 }

@@ -1,6 +1,6 @@
 import { execSync } from 'child_process'
 
-const getArgs = () => {
+const getArguments = () => {
   const lcArgs = process.argv.slice(2)
   const lcResult = {}
 
@@ -19,13 +19,15 @@ const getArgs = () => {
   return lcResult
 }
 
-const checkGitRepository = () => {
+const isInsideGitRepository = () => {
   try {
-    const lOutput = execSync('git rev-parse --is-inside-work-tree', { encoding: 'utf-8' })
+    const lOutput = execSync('git rev-parse --is-inside-work-tree', {
+      encoding: 'utf-8'
+    })
     return lOutput.trim() === 'true'
   } catch (err) {
     return false
   }
 }
 
-export { getArgs, checkGitRepository }
+export { getArguments, isInsideGitRepository }
