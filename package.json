@@ -37,7 +37,8 @@
     "check:all": "npx -y standard . --fix && git add . && ./index.js --all",
     "check:release": "npx -y standard . --fix && git add . && ./index.js --force && ./index.js --r",
     "publish:major": "npm version major && npm publish --access public",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update":"npx -yes -p npm-check-updates ncu -u"
   },
   "type": "module",
   "version": "2.1.1"
