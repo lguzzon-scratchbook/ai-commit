@@ -169,6 +169,7 @@ function getNextTag (tag) {
 
 async function createRelease (tag, message) {
   if (!gcArgs.force) {
+    console.log(tag, ' --> ', message)
     const { continue: shouldContinue } = await inquirer.prompt([
       {
         type: 'confirm',
