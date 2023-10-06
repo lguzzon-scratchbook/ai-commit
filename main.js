@@ -322,10 +322,14 @@ async function commitEachFile () {
   }
 }
 
-function makeCommit (aInput, aFilename) {
-  console.log('Committing Message... 🚀 ')
-  execSync(`git commit "${aFilename}" -F - `, { input: aInput })
-  console.log('Commit Successful! 🎉')
+function makeCommit(aInput, aFilename) {
+  console.log('Committing Message... 🚀');
+  try {
+    execSync(`git commit "${aFilename}" -F - `, { input: aInput });
+    console.log('Commit Successful! 🎉');
+  } catch (error) {
+    console.error('Error committing message:', error);
+  }
 }
 
 async function generateSingleCommit (aGitDiff) {
