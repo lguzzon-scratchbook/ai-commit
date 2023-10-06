@@ -1,0 +1,13 @@
+tasks:
+  - before: |-
+      echo '---------------------------------------- before  script'
+      echo '******************** gitConfig'
+      pushd /tmp/ \
+        && (git clone https://gitlab.com/lguzzon-ubuntu/lib.git || true) \
+        && ./lib/tool/gitConfig.sh >/dev/null 2>&1 \
+        && echo "$(git aliases)" \
+        && popd
+    init: |-
+      echo '---------------------------------------- init    script'
+    command: |-
+      echo '---------------------------------------- command script'
