@@ -81,14 +81,14 @@ git config --global --replace-all alias.clna '!(git stash push || true) && git r
 # https://blog.developer.atlassian.com/the-power-of-git-subtree/
 # the acronym stands for "subtree add"
 # git sba <repository uri> <destination folder>
-git config --global --replace-all alias.sba '!b() { if git ls-remote --exit-code --heads $1 main; then echo main; else echo master; fi; }; f() { git subtree add --prefix $2 $1 ${3:-$(b $1)} --squash; }; f'
+git config --global --replace-all alias.sba '!b() { if git ls-remote --exit-code --heads $1 main >/dev/null 2>&1; then echo main; else echo master; fi; }; f() { git subtree add --prefix $2 $1 ${3:-$(b $1)} --squash; }; f'
 git config --global --replace-all alias.alib '!git sba https://gitlab.com/lguzzon-ubuntu/lib.git lib'
 # the acronym stands for "subtree update"
 # git sbu <repository uri> <destination folder>
-git config --global --replace-all alias.sbu '!b() { if git ls-remote --exit-code --heads $1 main; then echo main; else echo master; fi; }; f() { export GIT_EDITOR=true ; git subtree pull --prefix $2 $1 ${3:-$(b $1)} --squash; }; f'
+git config --global --replace-all alias.sbu '!b() { if git ls-remote --exit-code --heads $1 main >/dev/null 2>&1; then echo main; else echo master; fi; }; f() { export GIT_EDITOR=true ; git subtree pull --prefix $2 $1 ${3:-$(b $1)} --squash; }; f'
 git config --global --replace-all alias.ulib '!git sbu https://gitlab.com/lguzzon-ubuntu/lib.git lib'
 
-git config --global --replace-all alias.sbp '!b() { if git ls-remote --exit-code --heads $1 main; then echo main; else echo master; fi; }; f() { git subtree push --prefix $2 $1 ${3:-$(b $1)} ; }; f'
+git config --global --replace-all alias.sbp '!b() { if git ls-remote --exit-code --heads $1 main >/dev/null 2>&1; then echo main; else echo master; fi; }; f() { git subtree push --prefix $2 $1 ${3:-$(b $1)} ; }; f'
 git config --global --replace-all alias.plib '!git sbp https://gitlab.com/lguzzon-ubuntu/lib.git lib'
 
 # git flow related
@@ -110,6 +110,10 @@ git config --global --replace-all alias.gcall '!git reflog expire --expire=now -
 
 # https://twitter.com/KrasimirTsonev/status/1653784671400910848
 git config --global --replace-all alias.bwo '!git brs --sort=-committerdate'
+
+# gitme scratchbook installer
+git config --global --replace-all alias.igitme '!f(){ [ -d ./GITMEs ] || mkdir -p ./GITMEs; cd ./GITMEs; git clone https://gitlab.com/lguzzon-temps/gitme.git; cd gitme; }; f'
+git config --global --replace-all alias.ngitme '!f(){ [ -n "$1" ] && [ -d ./GITMEs ] || mkdir -p ./GITMEs && cd ./GITMEs && git clone https://gitlab.com/lguzzon-temps/gitme.git "$1" && cd "$1" && rm -Rf .git && ./gitMe.sh; }; f'
 
 # See also
 #   https://github.com/nvie/git-toolbelt
