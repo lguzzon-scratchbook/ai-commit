@@ -55,7 +55,7 @@ waitSSH() {
   local -r lMaxRetries="${3:-10}"
   local lDelay=${lFirstDelayinSecs}
   for ((lRetry = 1; lRetry <= lMaxRetries; lRetry++)); do
-    sshRootHost "${lHost}" "uptime && uname -a"
+    sshRootHost "${lHost}" "uptime && uname -a && lsb_release -a"
     if [ "$?" -eq "0" ]; then
       echo "OK !!! -- can connect with ssh to [${lHost}]"
       return 0
