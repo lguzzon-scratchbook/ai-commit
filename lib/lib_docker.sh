@@ -11,15 +11,16 @@ include "lib_hosts.sh"
 docker_Install_CMD() {
   cat <<EOF
     ${uResetInstalls}
-    ${aptPurge} docker docker-engine docker.io containerd runc
     ${aptUpdate}
-    ${aptInstall} dpkg-dev apt-transport-https ca-certificates curl software-properties-common gnupg lsb-release
-    sudo bash -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
-    sudo add-apt-repository "deb [arch=\$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable"
-    ${aptUpdate}
-    ${aptInstall} docker-ce docker-ce-cli containerd.io
+    curl -sSL https://get.docker.com | sh
+    if [ -d "/data" ]; then
+      echo '{ "registry-mirrors": ["https://mirror.gcr.io"], "data-root": "/data/docker-data" }' >/etc/docker/daemon.json
+    else
+      echo '{ "registry-mirrors": ["https://mirror.gcr.io"] }' >/etc/docker/daemon.json
+    fi
+    sudo systemctl daemon-reload
+    sudo systemctl restart docker
     sudo docker run hello-world
-    sudo docker-compose --version
 EOF
   return $?
 }
@@ -88,7 +89,7 @@ EOF
 
 docker_NoRootUser_Install() {
   local -r lUser=${1:-$USER}
-  echoExecOk eval "$(docker_NoRootUser_Install_CMD ${lUser})"
+  echoExecOk eval "$(docker_NoRootUser_Install_CMD "${lUser}")"
   return $?
 }
 

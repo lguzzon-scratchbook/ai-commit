@@ -12,7 +12,7 @@ readonly hosts="${script_dir}/hosts.txt"
 readonly clusterHosts=$([ -f "${hosts}" ] && sed 's/^[ \t]\+//g;s/[ \t]\+.*$//g' "${hosts}" | sort -t "." -u -n -nk1,1 -nk2,2 -nk3,3 -nk4,4 | sed 's/^[ \t*]\+//g;s/[ \t]\+.*$//g')
 readonly clusterHostsCount=$( ([ -z "$clusterHosts" ] && echo "0") || echo "${clusterHosts}" | wc -l)
 readonly primaryHost=$(echo "${clusterHosts}" | head -n 1)
-readonly secondaryHostsCount=$( ([ -z "$clusterHosts" ] && echo "0") || (("$clusterHostsCount" - 1)))
+readonly secondaryHostsCount=$( ([ -z "$clusterHosts" ] && echo "0") || echo $((clusterHostsCount - 1)))
 readonly secondaryHosts=$(echo "${clusterHosts}" | tail -n "${secondaryHostsCount}")
 
 clusterHostsAsSeparatorList() {
@@ -81,7 +81,7 @@ forEachSecondaryHostSeq() {
 
 cmdForEachHost() {
   for lServerIP in ${clusterHosts}; do
-    ($* ${lServerIP}) &
+    ($* "${lServerIP}") &
   done
   wait
   return $?
@@ -94,7 +94,7 @@ hostsAddSSHKey() {
   chmod 700 "${HOME}/.ssh"
   [[ -f "${HOME}/.ssh/id_rsa.pub" ]] || (sudo apt -y install openssh-client && ssh-keygen -t rsa -f "${HOME}/.ssh/id_rsa" -P "")
   for lServerIP in ${lClusterHosts}; do
-    echoExecOk ssh-copy-id -i "${HOME}/.ssh/id_rsa.pub" $lUser@"${lServerIP}" 2>&1 | teeNoColor "${script_log_dir}/${lServerIP}.log"
+    echoExecOk ssh-copy-id -i "${HOME}/.ssh/id_rsa.pub" "$lUser"@"${lServerIP}" 2>&1 | teeNoColor "${script_log_dir}/${lServerIP}.log"
     if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
       exit 1
     fi
@@ -120,20 +120,20 @@ hostsAddSudoUser() {
   local -r lUserName=${2:-"suser"}
   local -r lHost=${3-}
   local -r lCommand="\
-       sudo killall -u ${lUserName} \
+       killall -u ${lUserName} \
     ;  userdel -fr ${lUserName} \
     ;  adduser --gecos '' --disabled-password ${lUserName} \
     && echo \"${lUserName}:${lUserPassword}\" | chpasswd \
-    && sudo usermod -aG sudo ${lUserName} \
-    && ( sudo sed -i '/${lUserName} ALL=(ALL:ALL) NOPASSWD: ALL/d' /etc/sudoers.d/${lUserName} \
-       ; echo '${lUserName} ALL=(ALL:ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/${lUserName} ) \
+    && usermod -aG sudo ${lUserName} \
+    && ( sed -i '/${lUserName} ALL=(ALL:ALL) NOPASSWD: ALL/d' /etc/sudoers.d/${lUserName} \
+       ; echo '${lUserName} ALL=(ALL:ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/${lUserName} ) \
     && mkdir -p /home/${lUserName}/.ssh \
     && touch /home/${lUserName}/.ssh/authorized_keys \
-    && sudo chown -R ${lUserName}:${lUserName} /home/${lUserName}/.ssh \
-    && sudo chmod 0700 /home/${lUserName}/.ssh \
-    && sudo chmod 0600 /home/${lUserName}/.ssh/authorized_keys \
-    && sudo groupadd docker \
-    && sudo usermod -aG docker ${lUserName}
+    && chown -R ${lUserName}:${lUserName} /home/${lUserName}/.ssh \
+    && chmod 0700 /home/${lUserName}/.ssh \
+    && chmod 0600 /home/${lUserName}/.ssh/authorized_keys \
+    && groupadd docker \
+    && usermod -aG docker ${lUserName}
     "
   echo "User -> name[${lUserName}] password[${lUserPassword}]"
   if isEmpty "${lHost}"; then

@@ -6,6 +6,7 @@
 
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 # set -Eeuo pipefail
+# shellcheck disable=SC2317  # Don't warn about unreachable commands in this file
 
 set -Eeuo pipefail
 
@@ -118,7 +119,7 @@ include "lib_docker.sh"
 gDEBUG=1
 
 dbgMSG() {
-  if test $gDEBUG -eq 0; then
+  if test "$gDEBUG" -eq 0; then
     echo "DEBUG [$@]"
   fi
 }
@@ -146,7 +147,7 @@ simpleUninstall() {
       fi
     fi
   fi
-  return $lResult
+  return "$lResult"
 }
 
 architectureOs() {
@@ -216,8 +217,8 @@ ffsend_i() {
     && mustBeHere install \
     && sudo install "${lGitHubAppPath}" "${lBin}" \
     && rm "${lGitHubAppPath}" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} --version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" --version
   return $?
 }
 
@@ -303,7 +304,7 @@ mobileDev_i() {
   popd
   # ------------------------------------------------------
   # JAVA
-  sdk install java $(sdk ls java | grep "\-open" | grep -v "\.ea\." | sed -e 's/^.*| \([^-]*\)-.*$/\1/' | grep "^8" | head -1)-open
+  sdk install java "$(sdk ls java | grep "\-open" | grep -v "\.ea\." | sed -e 's/^.*| \([^-]*\)-.*$/\1/' | grep "^8" | head -1)-open"
   eval "echo \"JAVA_HOME=${JAVA_HOME}\""
   java -version
   # ------------------------------------------------------
@@ -410,7 +411,18 @@ nvm_u() {
       || removeLinesFromFileContaining "NVM_DIR" "${HOME}/.profile"
     lResult=0
   fi
-  return $lResult
+  return "$lResult"
+}
+
+pnpm_i() {
+  mustBeHere curl
+  curl -fsSL https://get.pnpm.io/install.sh | sh -
+  return $?
+}
+
+pnpm_u() {
+  [ -d "$PNPM_HOME" ] && rm -rf "$PNPM_HOME"
+  return $?
 }
 
 restic_i() {
@@ -434,8 +446,8 @@ restic_i() {
     && mustBeHere install \
     && sudo install "${lGitHubAppPath}" "${lBin}" \
     && rm "${lGitHubAppPath}" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" version
   return $?
 }
 
@@ -485,8 +497,8 @@ shellCheck_i() {
     && mustBeHere install \
     && sudo install "${lGitHubAppPath}" "${lBin}" \
     && rm "${lGitHubAppPath}" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} --version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" --version
   return $?
 }
 
@@ -520,8 +532,8 @@ yq_i() {
     && mustBeHere install \
     && sudo install "${lGitHubAppPath}" "${lBin}" \
     && rm "${lGitHubAppPath}" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} --version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" --version
   return $?
 }
 
@@ -557,8 +569,8 @@ shfmt_i() {
     && mustBeHere install \
     && sudo install "${lGitHubAppPath}" "${lBin}" \
     && rm "${lGitHubAppPath}" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} -version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" -version
   return $?
 }
 
@@ -648,8 +660,8 @@ upx_i() {
       echo "[ -d \"${APP_PATH}\" ] && export PATH=\"${APP_PATH}\${PATH:+:\$PATH}\""
       echo "### --- ${lGitHubApp^^} --- ###"
     } >>"$BASHRC_PATH" \
-    && which ${lGitHubApp} \
-    && ${lGitHubApp} --version
+    && which "${lGitHubApp}" \
+    && "${lGitHubApp}" --version
 }
 
 architectureNim() {
@@ -727,29 +739,59 @@ zig_i() {
       echo "[ -d \"${APP_PATH}\" ] && export PATH=\"${APP_PATH}\${PATH:+:\$PATH}\""
       echo "### --- ${TOOL_NAME^^} --- ###"
     } >>"${BASHRC_PATH}" \
-    && which ${TOOL_NAME} \
-    && ${TOOL_NAME} version
+    && which "${TOOL_NAME}" \
+    && "${TOOL_NAME}" version
 }
 
 v_i() {
-  sAPPS_PATH
-  local -r TOOL_NAME="v"
-  local -r APP_PATH="${APPS_PATH}/${TOOL_NAME}"
-  [ -d "${APP_PATH}/.git" ] || git clone https://github.com/vlang/v "${APP_PATH}"
-  cd "${APP_PATH}"
-  git pull
-  make
-  sudo ./v -v symlink
+  local -r lAppPath=$(which v)
+  if [[ -n $lAppPath ]]; then
+    v -v up
+  else
+    sAPPS_PATH
+    local -r TOOL_NAME="v"
+    local -r APP_PATH="${APPS_PATH}/${TOOL_NAME}"
+    [ -d "${APP_PATH}/.git" ] || git clone https://github.com/vlang/v "${APP_PATH}"
+    cd "${APP_PATH}"
+    git pull
+    make
+    sudo ./v -v symlink
+  fi
   v -v self -prod
   v version
+  return $?
 }
 
 nala_i() {
   sudo echo "deb http://deb.volian.org/volian/ scar main" | sudo tee /etc/apt/sources.list.d/volian-archive-scar-unstable.list
   sudo wget -qO - https://deb.volian.org/volian/scar.key | sudo tee /etc/apt/trusted.gpg.d/volian-archive-scar-unstable.gpg >/dev/null
   sudo apt update
-  (sudo apt install nala-legacy) || (sudo apt install nala)
+  (sudo apt -y install nala-legacy) || (sudo apt -y install nala)
   sudo nala update && sudo nala upgrade && sudo nala autopurge && sudo nala autoremove && sudo nala clean
+  return $?
+}
+
+nala_u() {
+  (sudo apt -y purge nala-legacy) || (sudo apt -y purge nala)
+  sudo rm /etc/apt/sources.list.d/volian-archive-scar-unstable.list || true
+  sudo rm /etc/apt/trusted.gpg.d/volian-archive-scar-unstable.gpg || true
+  sudo apt update
+  sudo apt -y autoremove
+  return $?
+}
+
+libreoffice_u() {
+  sudo apt remove --purge libreoffice* -y
+  sudo apt autoremove -y
+  sudo apt autoclean -y
+  sudo add-apt-repository --remove ppa:libreOffice/ppa
+}
+
+libreoffice_i() {
+  libreoffice_u
+  sudo add-apt-repository -y ppa:libreoffice
+  sudo apt update
+  sudo apt install libreoffice -y
 }
 
 main() {
@@ -783,9 +825,12 @@ main() {
         -javaJdk_u | --javaJDK_uninstall) echoExecOk sudo apt -y purge default-jdk ;;
         -javaJre_i | --javaJRE_Install) echoExecOk sudo apt -y install default-jre ;;
         -javaJre_u | --javaJRE_Uninstall) echoExecOk sudo apt -y purge default-jre ;;
+        -loffice_i | --libreoffice_Install) echoExecOk libreoffice_i ;;
+        -loffice_u | --libreoffice_Uninstall) echoExecOk libreoffice_u ;;
         -mobile_i | --mobileDev_i) echoExecOk mobileDev_i ;;
         -mobile_u | --cordovaAndroidBuildEnvironment_u) echoExecOk cordovaAndroidBuildEnvironment_u ;;
-        -nala_i | --nala_i) echoExecOk nala_i ;;
+        -nala_i | --nala_Install) echoExecOk nala_i ;;
+        -nala_u | --nala_Uninstall) echoExecOk nala_u ;;
         -nim_i | --nim_Install)
           if [ "${2-}" == "" ]; then
             echoExecOk nim_i
@@ -796,9 +841,11 @@ main() {
           ;;
         -nvm_i | --nvm_Install) echoExecOk nvm_i ;;
         -nvm_u | --nvm_Uninstall) echoExecOk nvm_u ;;
-        -rcloneb_i | --rcloneBeta_Install) echoExecOk rcloneb_i ;;
+        -pnpm_i | --pnpm_Install) echoExecOk pnpm_i ;;
+        -pnpm_u | --pnpm_Uninstall) echoExecOk pnpm_u ;;
         -rclone_i | --rclone_Install) echoExecOk rclone_i ;;
         -rclone_u | --rclone_Uninstall) echoExecOk simpleUninstall rclone ;;
+        -rcloneb_i | --rcloneBeta_Install) echoExecOk rcloneb_i ;;
         -redis_i | --redis_cli_Install) echoExecOk redisCli_i ;;
         -restic_i | --restic_Install) echoExecOk restic_i ;;
         -restic_u | --restic_Uninstall) echoExecOk simpleUninstall restic ;;
