@@ -159,6 +159,9 @@ function getCommitsText (since) {
 
 async function promptUser (prompt) {
   console.log('Getting release summary ...')
+  if (gcVerbose) {
+    console.info(`Prompt text -> \n${prompt}\n`)
+  }
   const { text } = await mySendMessage(prompt)
   return text.replaceAll('"', '').replaceAll('```\n', '').replaceAll('\n```', '').trim()
 }
