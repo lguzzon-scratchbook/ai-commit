@@ -159,8 +159,11 @@ function getCommitsText (since) {
 
 async function promptUser (prompt) {
   console.log('Getting release summary ...')
+  if (gcVerbose) {
+    console.info(`Prompt text -> \n${prompt}\n`)
+  }
   const { text } = await mySendMessage(prompt)
-  return text.trim().replaceAll('"', '')
+  return text.replaceAll('"', '').replaceAll('```\n', '').replaceAll('\n```', '').trim()
 }
 
 function getNextTag (tag) {
@@ -310,7 +313,7 @@ async function generateSingleCommit (aGitDiff) {
   console.log('Commit get message ...')
   const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
-  const lText = split90(text).replaceAll('```\n', '').replaceAll('\n```', '')
+  const lText = split90(text).replaceAll('```\n', '').replaceAll('\n```', '').trim()
   console.log(
     `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
