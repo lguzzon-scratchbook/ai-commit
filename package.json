@@ -7,7 +7,6 @@
     "url": "https://github.com/insulineru/ai-commit/issues"
   },
   "dependencies": {
-    "chatgpt": "^5.2.5",
     "dotenv": "^16.4.5",
     "gpt-3-encoder": "^1.1.4",
     "inquirer": "^10.1.8"
@@ -38,7 +37,7 @@
     "check:release": "npx -y standard . --fix && git add . && ./index.js --force && (git gfi || true) && ./index.js --r",
     "publish:major": "npm version major && npm publish --access public",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "update":"npx -yes -p npm-check-updates ncu -u"
+    "update": "npx -yes -p npm-check-updates ncu -u"
   },
   "type": "module",
   "version": "2.1.1"

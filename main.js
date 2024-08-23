@@ -1,7 +1,6 @@
 'use strict'
 
 import { execSync } from 'child_process'
-import { ChatGPTAPI, ChatGPTUnofficialProxyAPI } from 'chatgpt'
 import inquirer from 'inquirer'
 import { getArguments, isInsideGitRepository } from './helpers.js'
 import { filterApi } from './filterApi.js'
@@ -12,35 +11,35 @@ dotenv.config()
 const gcArgs = getArguments()
 const gcVerbose = gcArgs.v || gcArgs.verbose
 // const gcDebug = gcArgs.d || gcArgs.debug
-const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY
-const gcApiToken = process.env.OPENAI_ACCESS_TOKEN
+const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY
 
-if (!gcApiKey && !gcApiToken) {
+const lcBeginTemplateTag = 'Begin-Template'
+const lcEndTemplateTag = 'End-Template'
+const lcBeginGitDiffTag = 'Begin-GitDiff'
+const lcEndGitDiffTag = 'End-GitDiff'
+
+if (!gcApiKey) {
   console.error('Please set the OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable.')
   process.exit(1)
 }
 
-const gcCompletionParams = {
-  temperature: 0,
-  top_p: 0.2
-}
-
-const gcApi = gcApiToken
-  ? new ChatGPTUnofficialProxyAPI({
-    accessToken: process.env.OPENAI_ACCESS_TOKEN,
-    completionParams: gcCompletionParams
+const gcApi = message => fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${gcApiKey}`,
+    'HTTP-Referer': 'https://ai-commit.lucaguzzon.com', // Optional, for including your app on openrouter.ai rankings.
+    'X-Title': 'ai-commit', // Optional. Shows in rankings on openrouter.ai.
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'openrouter/auto',
+    temperature: 0,
+    top_p: 0.2,
+    messages: [
+      { role: 'user', content: message }
+    ]
   })
-  : new ChatGPTAPI({
-    apiBaseUrl: 'https://openrouter.lguzzon.workers.dev/v1',
-    apiKey: gcApiKey,
-    completionParams: gcCompletionParams
-  })
-
-if (gcApiToken) {
-  console.log('Using: ApiToken')
-} else {
-  console.log('Using: ApiKey')
-}
+})
 
 const prompts = {
   ok: function (aGitDiff) {
@@ -60,10 +59,6 @@ const prompts = {
     ]
   },
   v03_head: function (aGitDiff) {
-    const lcBeginTemplateTag = 'Begin-Template'
-    const lcEndTemplateTag = 'End-Template'
-    const lcBeginGitDiffTag = 'Begin-GitDiff'
-    const lcEndGitDiffTag = 'End-GitDiff'
     return [
       'Please provide a conventional commit message following this template:',
       `${separator(lcBeginTemplateTag)}`,
@@ -86,7 +81,9 @@ const prompts = {
 }
 
 async function mySendMessage (aMessage) {
-  return gcApi.sendMessage(aMessage)
+  const lResponse = await gcApi(aMessage)
+  const lJson = await lResponse.json()
+  return { text: lJson.choices[0].message.content.replace(`${separator(lcBeginTemplateTag)}`, '').replace(`${separator(lcEndTemplateTag)}`, '') }
 }
 
 export async function main () {
