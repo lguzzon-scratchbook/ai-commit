@@ -229,71 +229,55 @@ function getGitDiffUnified () {
 }
 
 async function commitEachFile () {
-  // Get list of staged files with their status
   const stagedFiles = execSync('git diff --cached --name-status')
     .toString()
     .trim()
     .split('\n')
 
-  // Loop through each staged file
-  for (let i = 0; i < stagedFiles.length; i++) {
-    const [status, file] = stagedFiles[i].trim().split('\t')
+  for (const fileStatus of stagedFiles) {
+    const [status, file] = fileStatus.trim().split('\t')
 
-    // Print file being processed
-    console.log('\nProcessing file ->', file)
+    if (!file) {
+      continue
+    }
 
-    // Check if file exists
-    if (file) {
-      switch (status.trim().toUpperCase()) {
-        case 'D':
-          // Create commit for deleted file
-          makeCommit(`chore(${file}): 🔧 - File deleted`, file)
-          break
+    let commitMessage
 
-        default:
-          {
-            // Get diff for staged file
-            const diff = execSync(
-              `git diff -U${getGitDiffUnified()} --staged "${file}"`
-            )
-              .toString()
-              .trim()
+    switch (status.trim().toUpperCase()) {
+      case 'D':{
+        commitMessage = `chore(${file}):  - File deleted`
+        break }
 
-            // Handle empty diff
-            if (!diff) {
-              console.log('No changes to commit 🙅')
-              console.log(
-                'May be you forgot to add the files? Try git add . and then run this script again.'
-              )
-              process.exit(1)
-            }
+      default:{
+        const diff = execSync(
+          `git diff -U${getGitDiffUnified()} --staged "${file}"`
+        )
+          .toString()
+          .trim()
 
-            // Generate commit message for file changes
-            const commitMessage = await generateSingleCommit(diff)
+        if (!diff) {
+          console.log('May be you forgot to add the files? Try git add . and then run this script again.')
+          process.exit(1)
+        }
 
-            // Confirm commit creation if not forced
-            if (!gcArgs.force) {
-              const answer = await inquirer.prompt([
-                {
-                  type: 'confirm',
-                  name: 'continue',
-                  message: 'Do you want to continue?',
-                  default: true
-                }
-              ])
+        commitMessage = await generateSingleCommit(diff) }
+    }
 
-              if (!answer.continue) {
-                console.log('Commit aborted by user 🙅‍♂️')
-                process.exit(1)
-              }
-            }
+    if (!gcArgs.force) {
+      const { continue: shouldContinue } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'continue',
+        message: 'Do you want to continue?',
+        default: true
+      })
 
-            // Create commit for file changes
-            makeCommit(commitMessage, file)
-          }
-          break
+      if (!shouldContinue) {
+        console.log('Commit aborted by user ')
+        process.exit(1)
       }
     }
+
+    makeCommit(commitMessage, file)
   }
 }
 
