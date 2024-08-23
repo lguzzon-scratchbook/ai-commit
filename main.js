@@ -32,7 +32,8 @@ const gcApi = message => fetch('https://openrouter.ai/api/v1/chat/completions', 
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    model: 'openrouter/auto',
+    // model: 'openrouter/auto',
+    model: 'openai/gpt-3.5-turbo',
     temperature: 0,
     top_p: 0.2,
     messages: [
