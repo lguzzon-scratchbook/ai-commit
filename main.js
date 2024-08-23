@@ -83,11 +83,7 @@ const prompts = {
 async function mySendMessage (aMessage) {
   const lResponse = await gcApi(aMessage)
   const lJson = await lResponse.json()
-  console.log('🚀 ~ mySendMessage ~ lJson:', JSON.stringify(lJson))
-  console.log('🚀 ~ mySendMessage ~ lJson:', lJson.choices[0].message.content)
   return { text: lJson.choices[0].message.content.replace(`${separator(lcBeginTemplateTag)}`, '').replace(`${separator(lcEndTemplateTag)}`, '') }
-  // .then(response => response.json())
-  //  .then(data => console.log(data));
 }
 
 export async function main () {
