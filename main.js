@@ -31,6 +31,7 @@ const gcApi = gcApiToken
     completionParams: gcCompletionParams
   })
   : new ChatGPTAPI({
+    apiBaseUrl: 'https://openrouter.lguzzon.workers.dev/v1',
     apiKey: gcApiKey,
     completionParams: gcCompletionParams
   })
