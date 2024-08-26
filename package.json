@@ -9,7 +9,8 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "gpt-3-encoder": "^1.1.4",
-    "inquirer": "^10.1.8"
+    "inquirer": "^10.1.8",
+    "semver": "^7.6.3"
   },
   "description": "✨ Make Github commits easier with ChatGPT, Gitmoji and Conventional Commits 🚀",
   "devDependencies": {
