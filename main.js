@@ -160,7 +160,7 @@ async function commitRelease () {
 
   // Get commit messages and prompt user for release summary
   const commitsText = getCommitsText(latestCommit)
-  const prompt = `Craft a concise yet comprehensive release summary that begins with an imperative verb and remains under 80 characters. This summary should encapsulate the essence of all Git commits since the previous release. Consider the following aspects: What are the most significant changes or features introduced? Are there any recurring themes or areas of focus in the commits? How do these changes impact the overall functionality or user experience? Are there any critical bug fixes or performance improvements? Does the commit history reveal any shifts in development priorities or approaches?:\n[Git commits]\n${commitsText}`
+  const prompt = `Craft a concise, imperative sentence (less than 80 characters) that distills the essence of the previous release, based on a thorough analysis of the Git commit messages. What key features, bug fixes, or improvements can be highlighted in a single, action-oriented statement? Consider the tone and style of the sentence, ensuring it's clear, concise, and engaging for developers and users alike. Provide a sentence that begins with a verb like 'Fix', 'Improve', 'Enhance', or 'Optimize', and includes relevant details from the commit messages:\n[Git commits]\n${commitsText}`
   const message = await promptUser(prompt)
 
   // Create new tag and release
