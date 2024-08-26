@@ -33,7 +33,8 @@ const gcApi = message => fetch('https://openrouter.ai/api/v1/chat/completions', 
   },
   body: JSON.stringify({
     // model: 'openrouter/auto',
-    model: 'openai/gpt-3.5-turbo',
+    // model: 'openai/gpt-3.5-turbo',
+    model: 'openai/gpt-4o-mini',
     temperature: 0,
     top_p: 0.2,
     messages: [
@@ -78,6 +79,38 @@ const prompts = {
       '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
       '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
     ]
+  },
+  v04: function (aGitDiff) {
+    return [
+      ...this.v04_head(aGitDiff),
+      '- Ensure, using bullet points, to list all changes, updates, additions, and deletions made in the git diff in detail and include nothing else: <description>'
+    ]
+  },
+  v04s: function (aGitDiff) {
+    return [
+      ...this.v04_head(aGitDiff),
+      '- Ensure that the description is a list with all changes, updates, additions, and deletions made for each file in the git diff in detail, using bullet points and nothing else!: <description>'
+    ]
+  },
+  v04_head: function (aGitDiff) {
+    return [
+      'Please provide a conventional commit message following this [template]:',
+      '[template]=\'\'\'',
+      '<type>(scope): <gitmoji> - <subject>',
+      '',
+      '<description>',
+      '\'\'\'',
+      'Given the following [git diff]:',
+      '[git diff]=\'\'\'',
+      aGitDiff,
+      '\'\'\'',
+      'Remember that the goal of a commit message is to provide a clear and concise summary of the changes made, which will be helpful for future developers who are working on the project.',
+      'Analyze the given git diff and make sure to:',
+      '- Identify the type of changes made in the diff, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`: <type>',
+      '- If necessary, select a scope from files, directories, or topics: <scope>',
+      '- Choose a gitmoji icon character that corresponds to the type of changes made in the diff, such as 🚀 for `feat`, 🐛 for `fix`, 📝 for `docs`, 🎨 for `style`, ♻️ for `refactor`, 🧪 for `test`, or 🔧 for `chore`: <gitmoji>',
+      '- Ensure that the subject begins with an imperative verb and is no longer than 40 characters: <subject>'
+    ]
   }
 }
 
@@ -105,7 +138,7 @@ export async function main () {
 }
 
 function getOKProp (suffix = '') {
-  const lReturn = (gcArgs.p || gcArgs.prompt || 'v03') + suffix
+  const lReturn = (gcArgs.p || gcArgs.prompt || 'v04') + suffix
   console.warn('Using prompt -> ', lReturn)
   return lReturn
 }
@@ -127,7 +160,7 @@ async function commitRelease () {
 
   // Get commit messages and prompt user for release summary
   const commitsText = getCommitsText(latestCommit)
-  const prompt = `Provide a release summary sentence that begins with an imperative verb and is less than 80 characters long, analyzing all the Git commits text from the previous release. Follows the Git commits text:\n${commitsText}`
+  const prompt = `Craft a concise yet comprehensive release summary that begins with an imperative verb and remains under 80 characters. This summary should encapsulate the essence of all Git commits since the previous release. Consider the following aspects: What are the most significant changes or features introduced? Are there any recurring themes or areas of focus in the commits? How do these changes impact the overall functionality or user experience? Are there any critical bug fixes or performance improvements? Does the commit history reveal any shifts in development priorities or approaches?:\n[Git commits]\n${commitsText}`
   const message = await promptUser(prompt)
 
   // Create new tag and release
