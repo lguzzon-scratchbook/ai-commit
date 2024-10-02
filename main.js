@@ -1,6 +1,9 @@
 'use strict'
 
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { join, dirname, parse } from 'node:path'
+import { cwd, chdir } from 'node:process'
 import inquirer from 'inquirer'
 import { getArguments, isInsideGitRepository } from './helpers.js'
 import { filterApi } from './filterApi.js'
@@ -17,6 +20,10 @@ const lcBeginTemplateTag = 'Begin-Template'
 const lcEndTemplateTag = 'End-Template'
 const lcBeginGitDiffTag = 'Begin-GitDiff'
 const lcEndGitDiffTag = 'End-GitDiff'
+
+if (!findGitRoot()) {
+  process.exit(1)
+}
 
 if (!gcApiKey) {
   console.error('Please set the OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable.')
@@ -383,4 +390,30 @@ async function generateAICommit () {
   if (gcArgs.all) {
     await commitAllFiles()
   } else { await commitEachFile() }
+}
+
+function findGitRoot () {
+  // Check if current directory is in a Git repository
+  try {
+    execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' })
+  } catch {
+    console.log('You are not inside a Git repository.')
+    return false
+  }
+
+  // If we're here, we're in a Git repository
+  let currentDir = cwd()
+
+  while (currentDir !== parse(currentDir).root) {
+    if (existsSync(join(currentDir, '.git'))) {
+      chdir(currentDir)
+      console.log(`Changed working directory to: ${currentDir}`)
+      return true
+    }
+    currentDir = dirname(currentDir)
+  }
+
+  // This should not be reached if we're in a Git repo, but just in case
+  console.log('Error: Unable to find the root of the Git repository.')
+  return false
 }
