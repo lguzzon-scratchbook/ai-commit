@@ -165,6 +165,8 @@ async function commitRelease () {
     return
   }
 
+  console.warn('Using model  -> ', gcApiModel)
+
   // Get commit messages and prompt user for release summary
   const commitsText = getCommitsText(latestCommit)
   const prompt = `Craft a concise, imperative sentence (less than 80 characters) that distills the essence of the previous release, based on a thorough analysis of the Git commit messages. What key features, bug fixes, or improvements can be highlighted in a single, action-oriented statement? Consider the tone and style of the sentence, ensuring it's clear, concise, and engaging for developers and users alike. Provide a sentence that begins with a verb like 'Fix', 'Improve', 'Enhance', or 'Optimize', and includes relevant details from the commit messages:\n[Git commits]\n${commitsText}`
@@ -348,6 +350,7 @@ async function generateSingleCommitAll (aGitDiff) {
   const lPrompt = prompts.oks(aGitDiff).join('\n')
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  console.warn('Using model  -> ', gcApiModel)
   console.log('Commit all get message ...')
   const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
