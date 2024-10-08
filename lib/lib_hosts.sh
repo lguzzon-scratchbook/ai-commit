@@ -239,7 +239,8 @@ hostsSetVmParams() {
   && echo 20 > /proc/sys/vm/dirty_ratio \
   && echo 10 > /proc/sys/vm/dirty_background_ratio \
   && echo 360000 > /proc/sys/vm/dirty_expire_centisecs \
-  && echo 360000 > /proc/sys/vm/dirty_writeback_centisecs"
+  && echo 360000 > /proc/sys/vm/dirty_writeback_centisecs \
+  "
   if isEmpty "${lHost}"; then
     echoExecOk forEachHost "${lCommand}"
   else

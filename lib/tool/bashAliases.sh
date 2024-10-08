@@ -101,79 +101,11 @@ script_log_dir="${script_dir}/LOGs/${script_name}-$(sortDate)"
 readonly script_log_dir
 # Common Script Header End
 
-function my_abspath() {
-  if [[ -d $1 ]]; then
-    pushd "$1" >/dev/null || exit 1
-    pwd
-    popd >/dev/null || exit 1
-  elif [[ -e $1 ]]; then
-    pushd "$(dirname "$1")" >/dev/null || exit 1
-    echo "$(pwd)/$(basename "$1")"
-    popd >/dev/null || exit 1
-  else
-    echo "$1" does not exist! >&2
-    return 127
-  fi
+# Script Begin
+
+main() {
+  appendToFileIfNotPresent 'alias hgi="history| grep -i"' "${HOME}/.bashrc" || true
 }
 
-function updateFile() {
-  # set -x
-  local -r lFromFile="$1"
-  local -r lToFile="$1.old"
-  local -r lCommon="# Common Script"
-  local -r lLead="${lCommon} Header Begin"
-  local -r lTail="${lCommon} Header End"
-
-  cp "${lFromFile}" "${lToFile}"
-  sed -i -e "/${lLead}/,/${lTail}/{ /${lLead}/{p; r ""${script_dir}/template_ScriptHeader.sh""" -e "}; /${lTail}/p; d}" "${lFromFile}"
-  return 0
-}
-
-function main() {
-  local lSearchPathOk=0
-  local lSearchFromPath=$1
-
-  if [ -z "${lSearchFromPath}" ]; then
-    lSearchFromPath="${current_dir}"
-  fi
-
-  if [ -d "${lSearchFromPath}" ]; then
-    lSearchPathOk=1
-    lSearchFromPath=$(my_abspath "${lSearchFromPath}")
-  else
-    if [ -f "${lSearchFromPath}" ]; then
-      lSearchPathOk=2
-      lSearchFromPath=$(my_abspath "${lSearchFromPath}")
-    fi
-  fi
-
-  local lSelfUpdatedPath=""
-  case "$lSearchPathOk" in
-    "1")
-      echo "OK!!! Input parameter is directory [${lSearchFromPath}]"
-      shopt -s globstar
-      for file in "${lSearchFromPath}"/**/*.sh; do
-        # echo $(basename "${file}")
-        if [ "$(basename "${file}")" != "template_ScriptDefault.sh" ]; then
-          if [ "${file}" != "${script_path}" ]; then
-            # echo ${file}
-            updateFile "${file}"
-          else
-            lSelfUpdatedPath="${file}"
-          fi
-        fi
-      done
-      ;;
-    "2")
-      echo "OK!!! Input parameter is file [${lSearchFromPath}]"
-      updateFile "${lSearchFromPath}"
-      ;;
-    *)
-      echo "ERROR!!!!!! Input parameter is not a path or a file [${lSearchFromPath}]"
-      ;;
-  esac
-  ([ -f "${lSelfUpdatedPath}" ] && updateFile "${lSelfUpdatedPath}") || true
-}
-
-echoExecOk main "$@"
-exit $?
+echoExecOk main
+# Script End

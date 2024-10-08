@@ -589,7 +589,8 @@ git_i() {
 haxe_i() {
   sAPPS_PATH
   local -r HAXELIB_PATH="${APPS_PATH}/haxelib"
-  sudo add-apt-repository ppa:haxe/releases -y \
+  mustBeHere add-apt-repository software-properties-common \
+    && sudo add-apt-repository ppa:haxe/releases -y \
     && sudo apt-get update \
     && sudo apt-get install haxe -y \
     && ([ -d "${HAXELIB_PATH}" ] || mkdir "${HAXELIB_PATH}") \
@@ -616,6 +617,12 @@ aptMirrorUpdater_i() {
   mustBeHere python3-pip \
     && sudo pip3 install apt-mirror-updater \
     && sudo apt-mirror-updater --auto-change-mirror
+  return $?
+}
+
+aptMirrorUpdater_u() {
+  mustBeHere python3-pip \
+    && sudo pip3 uninstall apt-mirror-updater --verbose
   return $?
 }
 
@@ -745,7 +752,7 @@ zig_i() {
 
 v_i() {
   local -r lAppPath=$(which v)
-  if [[ -n $lAppPath ]]; then
+  if [[ -z $lAppPath ]]; then
     v -v up
   else
     sAPPS_PATH
@@ -755,7 +762,7 @@ v_i() {
     cd "${APP_PATH}"
     git pull
     make
-    sudo ./v -v symlink
+    sudo ./v symlink
   fi
   v -v self -prod
   v version
@@ -794,6 +801,29 @@ libreoffice_i() {
   sudo apt install libreoffice -y
 }
 
+bun_u() {
+  {
+    local npm_bin
+    npm_bin=$(command -v npm 2>/dev/null)
+    ([[ -n $npm_bin ]] && "$npm_bin" uninstall -g bun) || true
+    local pnpm_bin
+    pnpm_bin=$(command -v pnpm 2>/dev/null)
+    ([[ -n $pnpm_bin ]] && "$pnpm_bin" uninstall -g bun) || true
+    rm -rf ~/.bun
+  } 1>/dev/null 2>&1
+}
+
+bun_i() {
+  bun_u
+  mustBeHere curl
+  curl -fsSL https://bun.sh/install | bash
+}
+
+rust_i() {
+  mustBeHere curl
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+}
+
 main() {
   local -r helpString=$(printf '%s\n%s' "Help, valid options are :" "$(tr "\n" ":" <"${script_path}" | grep -o '# Commands start here:.*# Commands finish here' | tr ":" "\n" | grep -o '^ *\-[^)]*)' | sed 's/.$//' | sed 's/^ *//' | sed 's/^\(.\)/    \1/' | sort)")
   if [[ $# -gt 0 ]]; then
@@ -803,10 +833,13 @@ main() {
         # Commands start here
         -addUserToSudo | --addUserToSudo) echoExecOk addUserToSudo ;;
         -aptMirrorUpdater_i | --aptMirrorUpdater_i) echoExecOk aptMirrorUpdater_i ;;
+        -aptMirrorUpdater_u | --aptMirrorUpdater_u) echoExecOk aptMirrorUpdater_u ;;
         -archNim | --architecture_Nim) architectureNim ;;
         -archOs | --architecture_Os) architectureOs ;;
         -bpytop_i | --bpytop_Install) echoExecOk bpytop_i ;;
         -bpytop_u | --bpytop_Uninstall) echoExecOk bpytop_u ;;
+        -bun_i | --bun_Install) echoExecOk bun_i ;;
+        -bun_u | --bun_Uninstall) echoExecOk bun_u ;;
         -d2u | --dos2Unix) echoExecOk dos2Unix ;;
         -dbg | --debug) gDEBUG=0 ;;
         -docker_earthly_i | --docker_earthly_Install) echoExecOk docker_earthly_i ;;
@@ -851,6 +884,7 @@ main() {
         -restic_u | --restic_Uninstall) echoExecOk simpleUninstall restic ;;
         -ripgrep_i | --ripgrep_Install) echoExecOk ripgrep_i ;;
         -ripgrep_u | --ripgrep_Uninstall) echoExecOk ripgrep_u ;;
+        -rust_i | --rust_install) echoExecOk rust_i ;;
         -shellCheck_i | --shellCheck_Install) echoExecOk shellCheck_i ;;
         -shellCheck_u | --shellCheck_Uninstall) echoExecOk simpleUninstall shellcheck ;;
         -shfmt_i | --shfmt_Install) echoExecOk shfmt_i ;;
