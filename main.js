@@ -350,7 +350,7 @@ async function generateSingleCommitAll (aGitDiff) {
   console.log('Commit all get message ...')
   const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
-  const lText = split90(text)
+  const lText = split90(text).replaceAll('```\n', '').replaceAll('\n```', '').trim()
   console.log(
     `Proposed Commit: \n------------------------------\n${lText} \n------------------------------`
   )
