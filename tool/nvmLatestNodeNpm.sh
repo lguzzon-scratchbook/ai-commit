@@ -101,79 +101,47 @@ script_log_dir="${script_dir}/LOGs/${script_name}-$(sortDate)"
 readonly script_log_dir
 # Common Script Header End
 
-function my_abspath() {
-  if [[ -d $1 ]]; then
-    pushd "$1" >/dev/null || exit 1
-    pwd
-    popd >/dev/null || exit 1
-  elif [[ -e $1 ]]; then
-    pushd "$(dirname "$1")" >/dev/null || exit 1
-    echo "$(pwd)/$(basename "$1")"
-    popd >/dev/null || exit 1
-  else
-    echo "$1" does not exist! >&2
-    return 127
-  fi
-}
+# Script Begin
 
-function updateFile() {
-  # set -x
-  local -r lFromFile="$1"
-  local -r lToFile="$1.old"
-  local -r lCommon="# Common Script"
-  local -r lLead="${lCommon} Header Begin"
-  local -r lTail="${lCommon} Header End"
-
-  cp "${lFromFile}" "${lToFile}"
-  sed -i -e "/${lLead}/,/${lTail}/{ /${lLead}/{p; r ""${script_dir}/template_ScriptHeader.sh""" -e "}; /${lTail}/p; d}" "${lFromFile}"
-  return 0
-}
-
-function main() {
-  local lSearchPathOk=0
-  local lSearchFromPath=$1
-
-  if [ -z "${lSearchFromPath}" ]; then
-    lSearchFromPath="${current_dir}"
+main() {
+  # Check if NVM is installed and sourced
+  if ! [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
+    # Install NVM if not already installed
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
   fi
 
-  if [ -d "${lSearchFromPath}" ]; then
-    lSearchPathOk=1
-    lSearchFromPath=$(my_abspath "${lSearchFromPath}")
-  else
-    if [ -f "${lSearchFromPath}" ]; then
-      lSearchPathOk=2
-      lSearchFromPath=$(my_abspath "${lSearchFromPath}")
-    fi
+  # Source NVM to use it
+  . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+
+  set +u
+  # Get the latest version of Node.js
+  local latest_node_version
+  latest_node_version=$(nvm ls-remote | tail -1 | sed 's/->//' | sed 's/\s*v//' | sed 's/\x1B\[[0-9;]*[JKmsu]//g')
+  set -u
+  # Install and update to the latest version of Node.js
+  nvm install "$latest_node_version"
+  nvm use "$latest_node_version"
+
+  # Update npm to the latest version
+  npm install -g --silent npm
+
+  # Remove all other Node.js versions
+  local -r uninstall_nvms="$(nvm ls | grep -oP '\s+v\d+\.\d+\.\d+' | grep -v "$(nvm current)" | sed 's/\s*v//' | sed 's/\x1B\[[0-9;]*[JKmsu]//g')"
+  if [[ -n ${uninstall_nvms} && ${uninstall_nvms} != "** Trapped SIGINT or SIGTERM or ERR **" ]]; then
+    # Uninstall all other Node.js versions
+    for uninstall_nvm in $uninstall_nvms; do
+      echo "Uninstalling Node.js version: ${uninstall_nvm}"
+      nvm uninstall "$uninstall_nvm"
+    done
   fi
 
-  local lSelfUpdatedPath=""
-  case "$lSearchPathOk" in
-    "1")
-      echo "OK!!! Input parameter is directory [${lSearchFromPath}]"
-      shopt -s globstar
-      for file in "${lSearchFromPath}"/**/*.sh; do
-        # echo $(basename "${file}")
-        if [ "$(basename "${file}")" != "template_ScriptDefault.sh" ]; then
-          if [ "${file}" != "${script_path}" ]; then
-            # echo ${file}
-            updateFile "${file}"
-          else
-            lSelfUpdatedPath="${file}"
-          fi
-        fi
-      done
-      ;;
-    "2")
-      echo "OK!!! Input parameter is file [${lSearchFromPath}]"
-      updateFile "${lSearchFromPath}"
-      ;;
-    *)
-      echo "ERROR!!!!!! Input parameter is not a path or a file [${lSearchFromPath}]"
-      ;;
-  esac
-  ([ -f "${lSelfUpdatedPath}" ] && updateFile "${lSelfUpdatedPath}") || true
+  # Set the latest version as the default and stable alias
+  nvm alias default "$latest_node_version"
+  nvm alias stable "$latest_node_version"
+
+  # List all installed Node.js versions
+  nvm ls
 }
 
-echoExecOk main "$@"
-exit $?
+echoExecOk main
+# Script End
