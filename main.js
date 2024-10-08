@@ -15,6 +15,8 @@ const gcArgs = getArguments()
 const gcVerbose = gcArgs.v || gcArgs.verbose
 // const gcDebug = gcArgs.d || gcArgs.debug
 const gcApiKey = gcArgs.apiKey || process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY
+// See models here https://openrouter.ai/docs/models
+const gcApiModel = gcArgs.model || process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || 'openrouter/auto'
 
 const lcBeginTemplateTag = 'Begin-Template'
 const lcEndTemplateTag = 'End-Template'
@@ -39,9 +41,7 @@ const gcApi = message => fetch('https://openrouter.ai/api/v1/chat/completions', 
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    // model: 'openrouter/auto',
-    // model: 'openai/gpt-3.5-turbo',
-    model: 'openai/gpt-4o-mini',
+    model: gcApiModel,
     temperature: 0,
     top_p: 0.2,
     messages: [
@@ -164,6 +164,8 @@ async function commitRelease () {
     console.log('No new commits since last release')
     return
   }
+
+  console.warn('Using model  -> ', gcApiModel)
 
   // Get commit messages and prompt user for release summary
   const commitsText = getCommitsText(latestCommit)
@@ -333,6 +335,7 @@ async function generateSingleCommit (aGitDiff) {
   const lPrompt = prompts.ok(aGitDiff).join('\n')
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  console.warn('Using model  -> ', gcApiModel)
   console.log('Commit get message ...')
   const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
@@ -347,6 +350,7 @@ async function generateSingleCommitAll (aGitDiff) {
   const lPrompt = prompts.oks(aGitDiff).join('\n')
   if (gcVerbose) { console.info(`Prompt text -> \n${lPrompt}\n`) }
   if (!(await filterApi({ prompt: lPrompt, filterFee: gcArgs['filter-fee'] }))) { process.exit(1) }
+  console.warn('Using model  -> ', gcApiModel)
   console.log('Commit all get message ...')
   const lMessage = await mySendMessage(lPrompt)
   const { text } = lMessage
