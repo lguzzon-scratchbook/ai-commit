@@ -14,7 +14,7 @@ dotenv.config()
 const gcArgs = getArguments()
 const gcVerbose = gcArgs.v || gcArgs.verbose
 // const gcDebug = gcArgs.d || gcArgs.debug
-const gcApiKey = gcArgs.apiKey || process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY
+const gcApiKey = gcArgs.apiKey || process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY
 
 const lcBeginTemplateTag = 'Begin-Template'
 const lcEndTemplateTag = 'End-Template'
