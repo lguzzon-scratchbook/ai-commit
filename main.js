@@ -28,7 +28,7 @@ if (!findGitRoot()) {
 }
 
 if (!gcApiKey) {
-  console.error('Please set the OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable.')
+  console.error('Please set the OPENAI_API_KEY or OPENROUTER_API_KEY environment variable.')
   process.exit(1)
 }
 
