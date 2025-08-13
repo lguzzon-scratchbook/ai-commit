@@ -46,7 +46,7 @@
   "scripts": {
     "check": "npx -y standard . --fix && git add -A . && ./index.js",
     "check:all": "npx -y standard . --fix && git add -A . && ./index.js --all",
-    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && (git gfi || true) && ./index.js --r",
+    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && (git gfi || true) && ./index.js -r",
     "publish:major": "npm version major && npm publish --access public",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
