@@ -54,9 +54,11 @@ export class AiCommitApp {
       this.logger.warn('Using model  -> ', this.config.model)
 
       const commitsText = this.gitOps.getCommitsText(latestCommit)
-      const message = await this.promptUser(
-        `Craft a concise, imperative sentence (less than 80 characters) that distills the essence of the previous release, based on a thorough analysis of the Git commit messages. What key features, bug fixes, or improvements can be highlighted in a single, action-oriented statement? Consider the tone and style of the sentence, ensuring it's clear, concise, and engaging for developers and users alike. Provide a sentence that begins with a verb like 'Fix', 'Improve', 'Enhance', or 'Optimize', and includes relevant details from the commit messages:\n[Git commits]\n${commitsText}`
-      )
+      const message = await this.commitGenerator.generateReleaseSummary(commitsText)
+
+      if (!message) {
+        throw new AiCommitError('Failed to generate release summary')
+      }
 
       const nextTag = this.getNextTag(latestTag)
       await this.createRelease(nextTag, message)
