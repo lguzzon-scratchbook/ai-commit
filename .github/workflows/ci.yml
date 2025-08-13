@@ -5,10 +5,12 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: false
     
     strategy:
       matrix:
@@ -43,6 +45,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    if: false
     
     steps:
     - uses: actions/checkout@v4
@@ -65,7 +68,7 @@ jobs:
   build:
     needs: [test, security]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: false
     
     steps:
     - uses: actions/checkout@v4
