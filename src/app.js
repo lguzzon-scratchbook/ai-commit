@@ -51,7 +51,7 @@ export class AiCommitApp {
         return
       }
 
-      this.logger.warn('Using model  -> ', this.config.model)
+      this.logger.warn(`Using model -> ${this.config.model}`)
 
       const commitsText = this.gitOps.getCommitsText(latestCommit)
       const message = await this.commitGenerator.generateReleaseSummary(commitsText)
@@ -192,7 +192,7 @@ export class AiCommitApp {
   async createRelease (tag, message) {
     try {
       if (!this.cliArgs.force) {
-        console.log(tag, ' --> ', message)
+        console.log(`${tag} --> ${message}`)
         const { continue: shouldContinue } = await this.promptUser('Do you want to continue?', true)
         if (!shouldContinue) {
           throw new AiCommitError('Commit aborted by user 🙅‍♂️')
