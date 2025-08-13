@@ -1,0 +1,45 @@
+{
+  "entryPoints": ["src/index.js", "src/app.js", "src/commit/generator.js", "src/git/operations.js", "src/api/client.js", "src/config/index.js", "src/errors/index.js", "src/security/sanitizer.js", "src/di/container.js"],
+  "out": "docs",
+  "name": "ai-commit",
+  "readme": "README.md",
+  "plugin": ["typedoc-plugin-markdown"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "markdownOptions": {
+    "path": "./docs/api"
+  },
+  "version": true,
+  "gitRevision": "main",
+  "gitRemote": "origin",
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true,
+    "includeFolders": true
+  },
+  "categoryOrder": ["*", "Internal"],
+  "sort": ["source-order"],
+  "visibility": "public",
+  "defaultCategory": "General",
+  "categoryTitleMappings": {
+    "General": "API Reference"
+  },
+  "toc": [
+    {
+      "text": "Getting Started",
+      "items": [
+        "installation",
+        "usage"
+      ]
+    },
+    {
+      "text": "API Reference",
+      "items": [
+        "classes",
+        "interfaces",
+        "functions"
+      ]
+    }
+  ]
+}

@@ -13,10 +13,20 @@
     "semver": "^7.7.2",
     "undici": "^7.13.0"
   },
-  "description": "✨ Make Github commits easier with ChatGPT, Gitmoji and Conventional Commits 🚀",
   "devDependencies": {
-    "standard": "^17.1.2"
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^30.0.0",
+    "husky": "^9.1.7",
+    "jest": "^30.0.5",
+    "jest-environment-node": "^30.0.5",
+    "jest-esm-transformer": "^1.0.0",
+    "lint-staged": "^16.1.5",
+    "pre-commit": "^1.2.2",
+    "standard": "^17.1.2",
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1"
   },
+  "description": "✨ Make Github commits easier with ChatGPT, Gitmoji and Conventional Commits 🚀",
   "homepage": "https://github.com/insulineru/ai-commit#readme",
   "keywords": [
     "ai",
@@ -36,10 +46,18 @@
   "scripts": {
     "check": "npx -y standard . --fix && git add -A . && ./index.js",
     "check:all": "npx -y standard . --fix && git add -A . && ./index.js --all",
-    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && (git gfi || true) && ./index.js --r",
+    "check:release": "npx -y standard . --fix && git add . && ./index.js --force && (git gfi || true) && ./index.js -r",
     "publish:major": "npm version major && npm publish --access public",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "update": "npx -yes -p npm-check-updates ncu -u"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --ci --coverage --watchAll=false",
+    "lint": "npx -y standard . --fix",
+    "lint:check": "npx -y standard .",
+    "update": "npx -yes -p npm-check-updates ncu -u",
+    "docs": "typedoc src --out docs --name ai-commit --readme README.md --plugin typedoc-plugin-markdown",
+    "precommit": "lint-staged",
+    "prepare": "husky"
   },
   "type": "module",
   "version": "2.1.1"
