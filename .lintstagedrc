@@ -1,0 +1,12 @@
+{
+  "*.{js,jsx}": [
+    "npx standard --fix",
+    "npm run test:unit -- --passWithNoTests"
+  ],
+  "*.{json,md,yml,yaml}": [
+    "npx standard --fix"
+  ],
+  "package.json": [
+    "npm audit"
+  ]
+}
