@@ -229,7 +229,6 @@ export class AiCommitApp {
             { code: ErrorCodes.API_ERROR }
           )
         }
-        console.log('---> ', this.config.force)
         if (!this.config.force) {
           const answer = await this.promptUser(
             `Do you want to continue with commit for ${file}?`,
