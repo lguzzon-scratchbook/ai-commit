@@ -4,13 +4,14 @@ import { join, dirname, parse } from 'node:path'
 import { cwd, chdir } from 'node:process'
 import semver from 'semver'
 import { GitError } from '../errors/index.js'
+import { isValidGitRef, isValidUnifiedValue, isValidFilePath, escapeGitArg } from '../security/sanitizer.js'
 
 export class GitOperations {
   static findGitRoot () {
     try {
       execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' })
     } catch {
-      throw new GitError('You are not inside a Git repository.')
+      throw new GitError('You are not inside a Git repository.', null, { code: 3001 })
     }
 
     let currentDir = cwd()
@@ -27,7 +28,7 @@ export class GitOperations {
     }
 
     if (!gitRootFound) {
-      throw new GitError('Unable to find the root of the Git repository.')
+      throw new GitError('Unable to find the root of the Git repository.', null, { code: 3001 })
     }
 
     return true
@@ -55,57 +56,99 @@ export class GitOperations {
 
   static getLatestCommit (tag) {
     try {
-      return execSync(`git log ${tag ? tag + '..' : ''}HEAD --pretty=format:%H | tail -1`)
+      // Validate tag if provided
+      if (tag && !isValidGitRef(tag)) {
+        throw new GitError(`Invalid git tag: ${tag}`, null, { code: 3009 })
+      }
+
+      const range = tag ? `${tag}..HEAD` : 'HEAD'
+      return execSync(`git log ${range} --pretty=format:%H | tail -1`)
         .toString()
         .trim()
     } catch (error) {
-      throw new GitError(`Failed to get latest commit: ${error.message}`, 'git log')
+      throw new GitError(`Failed to get latest commit: ${error.message}`, null, { code: 3006 })
     }
   }
 
   static getCommitsText (since) {
     try {
-      return execSync(`git log ${since}..HEAD --pretty=format:%s`).toString().trim()
+      // Validate since parameter
+      if (since && !isValidGitRef(since)) {
+        throw new GitError(`Invalid git reference: ${since}`, null, { code: 3009 })
+      }
+
+      const range = since ? `${since}..HEAD` : 'HEAD'
+      return execSync(`git log ${range} --pretty=format:%s`).toString().trim()
     } catch (error) {
-      throw new GitError(`Failed to get commits text: ${error.message}`, 'git log')
+      throw new GitError(`Failed to get commits text: ${error.message}`, null, { code: 3006 })
     }
   }
 
   static getStagedFiles () {
     try {
       const output = execSync('git diff --cached --name-status').toString().trim()
-      return output ? output.split('\n') : []
+      return output?.split('\n') ?? []
     } catch (error) {
-      throw new GitError(`Failed to get staged files: ${error.message}`, 'git diff')
+      throw new GitError(`Failed to get staged files: ${error.message}`, null, { code: 3007 })
     }
   }
 
   static getStagedDiff (file = null, unified = 1) {
     try {
-      const diffCommand = `git diff -U${unified} --staged ${file ? `"${file}"` : ''}`
+      // Validate unified parameter
+      if (!isValidUnifiedValue(unified)) {
+        throw new GitError(`Invalid unified value: ${unified}`, null, { code: 3009 })
+      }
+
+      // Validate file parameter
+      if (file && !isValidFilePath(file)) {
+        throw new GitError(`Invalid file path: ${file}`, null, { code: 3009 })
+      }
+
+      const diffCommand = file
+        ? `git diff -U${unified} --staged "${escapeGitArg(file)}"`
+        : `git diff -U${unified} --staged`
+
       const output = execSync(diffCommand).toString().trim()
       return output
     } catch (error) {
-      throw new GitError(`Failed to get staged diff: ${error.message}`, 'git diff')
+      throw new GitError(`Failed to get staged diff: ${error.message}`, null, { code: 3005 })
     }
   }
 
   static commit (message, file = '.') {
     console.log('Committing Message... 🚀')
     try {
-      execSync(`git commit "${file}" -F - `, { input: message })
+      // Validate file parameter
+      if (!isValidFilePath(file)) {
+        throw new GitError(`Invalid file path: ${file}`, null, { code: 3009 })
+      }
+
+      const escapedFile = escapeGitArg(file)
+      execSync(`git commit "${escapedFile}" -F - `, { input: message })
       console.log('Commit Successful! 🎉')
       return true
     } catch (error) {
-      throw new GitError(`Failed to commit: ${error.message}`, 'git commit')
+      throw new GitError(`Failed to commit: ${error.message}`, null, { code: 3003 })
     }
   }
 
   static createReleaseTag (tag, message) {
     try {
-      execSync(`git gfr "${tag}" "${message}" >/dev/null 2>&1`)
+      // Validate tag and message parameters
+      if (!isValidGitRef(tag)) {
+        throw new GitError(`Invalid git tag: ${tag}`, null, { code: 3009 })
+      }
+
+      if (typeof message !== 'string' || message.length === 0) {
+        throw new GitError('Message is required for release tag', null, { code: 3002 })
+      }
+
+      const escapedTag = escapeGitArg(tag)
+      const escapedMessage = escapeGitArg(message)
+      execSync(`git gfr "${escapedTag}" "${escapedMessage}" >/dev/null 2>&1`)
     } catch (error) {
-      throw new GitError(`Failed to create release tag: ${error.message}`, 'git gfr')
+      throw new GitError(`Failed to create release tag: ${error.message}`, null, { code: 3004 })
     }
   }
 }
