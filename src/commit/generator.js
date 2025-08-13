@@ -222,11 +222,15 @@ export class CommitGenerator {
       }
 
       const response = await this.apiClient.sendMessage(prompt)
-      return response
+      const processedResponse = response
         .replaceAll('"', '')
         .replaceAll('```\n', '')
         .replaceAll('\n```', '')
         .trim()
+
+      // Truncate at the first line if it contains multiple lines
+      const firstLine = processedResponse.split('\n')[0]
+      return firstLine.trim()
     } catch (error) {
       throw new ValidationError(
         `Failed to generate release summary: ${error.message}`
