@@ -33,8 +33,8 @@ export class Config {
   }
 
   get unified () {
-    const unified = parseInt(this.cliArgs.unified || process.env.AI_COMMIT_UNIFIED)
-    return isNaN(unified) ? 1 : unified
+    const unified = Number.parseInt(this.cliArgs.unified || process.env.AI_COMMIT_UNIFIED)
+    return Number.isNaN(unified) ? 1 : unified
   }
 
   get all () {
