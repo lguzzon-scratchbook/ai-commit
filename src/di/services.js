@@ -66,14 +66,25 @@ container.register('cliArgs', () => {
     getAll: () => {
       // Parse process.argv or use existing logic
       const args = {}
-      process.argv.slice(2).forEach(arg => {
+      for (const arg of process.argv.slice(2)) {
         if (arg.startsWith('--')) {
-          const [key, value] = arg.slice(2).split('=')
-          args[key] = value || true
+          const keyValue = arg.slice(2)
+          if (!keyValue) continue // Skip empty keys like "--"
+
+          const [key, ...valueParts] = keyValue.split('=')
+          const trimmedKey = key.trim()
+          if (!trimmedKey) continue // Skip keys that are only whitespace
+
+          const value = valueParts.length > 0 ? valueParts.join('=').trim() : true
+          args[trimmedKey] = value === '' ? true : value
         } else if (arg.startsWith('-')) {
-          args[arg.slice(1)] = true
+          const key = arg.slice(1).trim()
+          if (key) { // Only add non-empty keys
+            args[key] = true
+          }
         }
-      })
+        // Ignore arguments that don't start with - or --
+      }
       return args
     }
   }
