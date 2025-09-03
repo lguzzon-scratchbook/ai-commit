@@ -322,7 +322,7 @@ ${baseInstructions}
       let currentLine = words[0]
 
       for (let i = 1; i < words.length; i++) {
-        const testLine = currentLine + ' ' + words[i]
+        const testLine = `${currentLine} ${words[i]}`
         if (testLine.length <= 90) {
           currentLine = testLine
         } else {

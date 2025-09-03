@@ -287,9 +287,9 @@ export class AiCommitApp {
   incrementTag (tag) {
     const parts = tag.split('.')
     if (parts.length === 3) {
-      const major = parseInt(parts[0]) || 0
-      const minor = parseInt(parts[1]) || 0
-      const patch = parseInt(parts[2]) || 0
+      const major = Number.parseInt(parts[0]) || 0
+      const minor = Number.parseInt(parts[1]) || 0
+      const patch = Number.parseInt(parts[2]) || 0
       return `${major}.${minor}.${patch + 1}`
     }
     return tag
